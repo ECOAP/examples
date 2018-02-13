@@ -134,16 +134,16 @@ if __name__ == "__main__":
             if nodes:
                 if first_time:
 
-                    if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
-                        subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1", shell=True, universal_newlines=True).strip()
+                    if int(subprocess.check_output("sudo ip -6 addr add fd00::1/64 dev tun1 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
+                        subprocess.check_output("sudo ip -6 addr add fd00::1/64 dev tun1", shell=True, universal_newlines=True).strip()
 
                     ret = controller.blocking(True).node(nodes[0]).net.iface("lowpan0").rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00])
                     print(ret)
-                    if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
-                        subprocess.check_output("sudo ip6tables -I INPUT 1 -d fd00::/8 -j ACCEPT", shell=True, universal_newlines=True).strip()
+                    if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/64 -j ACCEPT 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
+                        subprocess.check_output("sudo ip6tables -I INPUT 1 -d fd00::/64 -j ACCEPT", shell=True, universal_newlines=True).strip()
 
-                    if int(subprocess.check_output("sudo ip6tables -C OUTPUT -s fd00::/8 -j ACCEPT 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
-                        subprocess.check_output("sudo ip6tables -I OUTPUT 1 -s fd00::/8 -j ACCEPT", shell=True, universal_newlines=True).strip()
+                    if int(subprocess.check_output("sudo ip6tables -C OUTPUT -s fd00::/64 -j ACCEPT 2> /dev/null; echo $?", shell=True, universal_newlines=True).strip()) > 0:
+                        subprocess.check_output("sudo ip6tables -I OUTPUT 1 -s fd00::/64 -j ACCEPT", shell=True, universal_newlines=True).strip()
                     first_time = False
                     radio_platforms = controller.blocking(True).node(nodes[0]).radio.iface("lowpan0").get_radio_platforms()
                     for rp in radio_platforms:
@@ -153,7 +153,7 @@ if __name__ == "__main__":
 
                 else:
                     if coap_server_initialized is False:
-                        controller.blocking(True).node(nodes[0]).net.create_packetflow_sink(port=5683)
+                        #controller.blocking(True).node(nodes[0]).net.create_packetflow_sink(port=5683)
                         coap_server_initialized = True
                     for node in nodes:
                         
