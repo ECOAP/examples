@@ -1,5 +1,5 @@
 mac,IEEE802154e_macSlotframeSize,30
 mac,IEEE802154_phyTXPower,20
 mac,IEEE802154e_macTsTimeslotLength,10000
-app,APP_MessageSize,60
-app,APP_SendInterval,500
+app,app_payload_length,60
+app,app_send_interval,500
