@@ -98,8 +98,6 @@ class GlobalNodeManager(NodeManager):
         for mac_address in mac_address_list:
             self.mac_address_to_event_cb[mac_address] = event_callback
             msg = {'interface': [self.mac_address_to_interface[mac_address]], 'command': 'SUBSCRIBE_EVENT', 'upi_type': upi_type, 'event_key_list': event_key_list, 'event_duration': event_duration}
-            print("INVIO\n")
-            print(msg)
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
 
     def get_measurements_periodic(self, upi_type, measurement_key_list, collect_period, report_period, num_iterations, report_callback, mac_address_list=None):

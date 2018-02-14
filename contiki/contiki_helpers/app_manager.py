@@ -106,7 +106,6 @@ class AppManager(object):
         Returns:
             int: error code (0 = success, -1 = fail, >=1 errno value)
         """
-        print("subscribe\n")
         if self.node_manager.scope == "local":
             return self.node_manager.execute_upi_function("net", "subscribe_events_net", event_key_list, event_callback, event_duration, mac_address_list)
         else:
