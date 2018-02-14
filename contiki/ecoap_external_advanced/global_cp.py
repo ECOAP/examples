@@ -64,7 +64,6 @@ def handle_event(mac_address, event_name, event_value):
     measurement_logger.log_measurement(event_name, event_value)
 
 def event_cb(mac_address, event_name, event_value):
-    print("CIAO\n")
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
 
 def main():
