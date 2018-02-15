@@ -63,6 +63,11 @@ def handle_event(mac_address, event_name, event_value):
     print("%s @ %s: %s"%(str(mac_address), event_name, str(event_value)))
     measurement_logger.log_measurement(event_name, event_value)
 
+def handle_measurement(mac_address, measurement_report):
+    for st in measurement_report:
+        print("%s @ %s"%(str(mac_address), str(st)))
+        measurement_logger.log_measurement(st, measurement_report[st])
+
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
 
@@ -136,9 +141,12 @@ def main():
                     event_setting = list(event_setting_it)
                     print(event_setting)
                     if event_setting[0] == "1":
-#                        ret_events = taisc_manager.subscribe_events([event_setting[1]], event_cb, 0)
+                        ret_events = taisc_manager.subscribe_events([event_setting[1]], event_cb, 0)
                         ret_events = app_manager.subscribe_events([event_setting[1]], event_cb, 0)
                         print("Suscribe event %s returns %s"%(event_setting[1],ret_events))
+
+        #for m in measurement_logger.measurement_definitions:
+        app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,10,10,100000,handle_measurement) # TODO experiment duration
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:

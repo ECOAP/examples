@@ -1,0 +1,9 @@
+measurement_config:
+    module: stdout_measurement_logger
+    class_name: STDOUTMeasurementLogger
+    kwargs:
+        measurement_db_name: "coap_stats"
+        measurement_definitions:
+            app_rxstats: "timestamp:double numRx:int32 numTx:int32 numTxLoss:int32 packetDeliveryRatio:double"
+            app_stats: "numRx:int32 numRxLoss:int32 numTx:int32 numTxLoss:int32"
+            ipv6_stats: "numRx:int32 numRxLoss:int32 numTx:int32 numTxLoss:int32"
