@@ -45,7 +45,4 @@ modules:
             ControlAttributes : {'ipv6_connector': './config/protocol_connectors/ipv6_ctrl_attributes.csv', 'rpl_connector': './config/protocol_connectors/rpl_ctrl_attributes.csv'} 
             ControlFunctions : {'ipv6_connector': './config/protocol_connectors/ipv6_ctrl_functions.csv', 'rpl_connector': './config/protocol_connectors/rpl_ctrl_functions.csv'}
             ProtocolConnectors: {'ipv6_connector': 1, 'rpl_connector': 2}
-    coap:
-        module : wishful_module_coapthon
-        class_name : CoapthonModule
-        interfaces : ['lo']
+
