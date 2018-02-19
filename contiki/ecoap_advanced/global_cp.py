@@ -36,8 +36,6 @@ import _thread
 import csv
 import os
 import sys
-import subprocess
-
 
 from measurement_logger import *
 from stdout_measurement_logger import *
@@ -102,7 +100,6 @@ def main():
         global_node_manager = GlobalNodeManager(config)
         app_manager = AppManager(global_node_manager)
         taisc_manager = TAISCMACManager(global_node_manager, "CSMA")
-        controller = global_node_manager.control_engine
 
         # Configure the default callback:
         global_node_manager.set_default_callback(default_callback)
@@ -150,30 +147,6 @@ def main():
 
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,10,10,100000,handle_measurement) # TODO experiment duration
-
-        # Set routing operations (it sould be done on the root node, here we assume that the agent of the root runs on the same host of the controller)
-        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/64 dev tun1 2> /dev/null; echo $?", shell=True,
-                                       universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr add fd00::1/64 dev tun1", shell=True,
-                                    universal_newlines=True).strip()
-        if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/64 -j ACCEPT 2> /dev/null; echo $?",
-                                       shell=True, universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip6tables -I INPUT 1 -d fd00::/64 -j ACCEPT", shell=True,
-                                    universal_newlines=True).strip()
-
-        if int(subprocess.check_output("sudo ip6tables -C OUTPUT -s fd00::/64 -j ACCEPT 2> /dev/null; echo $?",
-                                       shell=True, universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip6tables -I OUTPUT 1 -s fd00::/64 -j ACCEPT", shell=True,
-                                    universal_newlines=True).strip()
-
-        # Occhio nel GlobalNodeManager c'e' un lowpan0 si assume che il nodo sia connesso a lowpan0, va bene nel nostro testbed?
-        root_node = None
-        for n in global_node_manager.connected_nodes.keys():
-            if global_node_manager.connected_nodes[n].ip == "127.0.0.1":
-                root_node = global_node_manager.connected_nodes[n]
-
-        # Start external coapthon server
-        controller.blocking(True).node(root_node).net.iface("lo").create_packetflow_sink(port=5683)
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
