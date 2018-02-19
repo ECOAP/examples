@@ -2,4 +2,5 @@ mac,IEEE802154e_macSlotframeSize,30
 mac,IEEE802154_phyTXPower,20
 mac,IEEE802154e_macTsTimeslotLength,10000
 app,app_payload_length,60
-app,app_send_interval,500
+app,coap_rto,5
+app,app_send_interval,5
