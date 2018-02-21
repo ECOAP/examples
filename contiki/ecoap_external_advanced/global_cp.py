@@ -148,7 +148,6 @@ def main():
                         ret_events = app_manager.subscribe_events([event_setting[1]], event_cb, 0)
                         print("Suscribe event %s returns %s"%(event_setting[1],ret_events))
 
-        #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,10,10,100000,handle_measurement) # TODO experiment duration
 
         # Set routing operations (it sould be done on the root node, here we assume that the agent of the root runs on the same host of the controller)
@@ -177,7 +176,8 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            gevent.sleep(1)
+
+            gevent.sleep(10)
             
     except KeyboardInterrupt:
         log.debug("Exit")
