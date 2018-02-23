@@ -44,6 +44,21 @@ class AppManager(object):
         """
         return self.node_manager.execute_upi_function("net", "set_parameters_net", mac_address_list, param_key_values_dict)
 
+    def update_async_configuration(self, param_key_values_dict, mac_address_list=None):
+        """Update the current MAC configuration.
+        This function takes a dictionary argument containing parameter key-value pairs.
+        This function returs a dictionary containing parameter key-error_code pairs.
+
+        Args:
+            parameter_key_values (Dict[str,Any]): a dictionary containing parameter key-value pairs.
+             radio_platforms (List[str], optional): list of radio platforms
+
+        Returns:
+            Dict[str, int]: This function returs a dictionary containing parameter key-error_codes pairs.
+        """
+        return self.node_manager.execute_async_upi_function("net", "set_parameters_net", mac_address_list, param_key_values_dict)
+
+
     def read_configuration(self, param_key_list, mac_address_list=None):
         """Update the current MAC configuration.
         This function takes a list of parameter keys as arguments.

@@ -175,6 +175,20 @@ class GlobalNodeManager(NodeManager):
                 ret[mac_address] = self.control_engine.blocking(True).node(node).iface(iface).exec_cmd(upi_type=upi_type, fname=upi_fname, args=args, kwargs=kwargs)
         return ret
 
+    def execute_async_upi_function(self, upi_type, upi_fname, mac_address_list=None, *args, **kwargs):
+        ret = {}
+        if mac_address_list is None:
+            mac_address_list = self.mac_address_list
+        if type(mac_address_list) is int:
+            mac_address_list = [mac_address_list]
+        for mac_address in mac_address_list:
+            if mac_address in self.mac_address_list:
+                node = self.mac_address_to_node_id[mac_address]
+                iface = self.mac_address_to_interface[mac_address]
+                self.control_engine._clear_call_context()
+                ret[mac_address] = self.control_engine.blocking(False).exec_time(0).callback(None).node(node).iface(iface).exec_cmd(upi_type=upi_type, fname=upi_fname, args=args, kwargs=kwargs)
+        return ret
+
     def schedule_upi_function(self, upi_type, upi_fname, exec_time, mac_address_list=None, callback=None, *args, **kwargs):
         ret = {}
         if mac_address_list is None:

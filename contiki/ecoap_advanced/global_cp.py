@@ -37,6 +37,7 @@ import csv
 import os
 import sys
 
+from contiki.ecoap_cc.simple_cc import *
 from measurement_logger import *
 from stdout_measurement_logger import *
 from file_measurement_logger import *
@@ -55,23 +56,31 @@ __email__ = "carlo.vallati@unipi.it"
 log = logging.getLogger('contiki_global_control_program')
 
 param_config_file = None
+cc_manager = None
 
 def default_callback(group, node, cmd, data, interface = ""):
     print("{} DEFAULT CALLBACK : Group: {}, NodeName: {}, Cmd: {}, Returns: {}, interface: {}".format(datetime.datetime.now(), group, node.name, cmd, data, interface))
 
 def handle_event(mac_address, event_name, event_value):
+    global cc_manager
     print("%s @ %s: %s"%(str(mac_address), event_name, str(event_value)))
-    measurement_logger.log_measurement(event_name, event_value)
+    e = (mac_address,) + event_value
+
+    cc_manager.event(event_name, e)
+
+    measurement_logger.log_measurement(event_name, e)
 
 def handle_measurement(mac_address, measurement_report):
     for st in measurement_report:
-        print("%s @ %s"%(str(mac_address), str(st)))
-        measurement_logger.log_measurement(str(st), measurement_report[st])
+        print("%s @ %s "%(str(mac_address), str(st)))
+        m = (mac_address,) + measurement_report[st][0]
+        measurement_logger.log_measurement(str(st), m )
 
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
 
 def main():
+    global cc_manager
     try:
         from docopt import docopt
     except:
@@ -147,10 +156,12 @@ def main():
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,10,10,100000,handle_measurement) # TODO experiment duration
 
+        cc_manager = SimpleCC(app_manager)
+
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            err = app_manager.update_configuration({"coap_rto": (5,1,2,3)})
-            gevent.sleep(3)
+            gevent.sleep(10)
+
             
     except KeyboardInterrupt:
         log.debug("Exit")
