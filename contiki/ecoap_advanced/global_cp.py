@@ -66,7 +66,7 @@ def handle_event(mac_address, event_name, event_value):
 def handle_measurement(mac_address, measurement_report):
     for st in measurement_report:
         print("%s @ %s"%(str(mac_address), str(st)))
-        measurement_logger.log_measurement(st, measurement_report[st])
+        measurement_logger.log_measurement(str(st), measurement_report[st])
 
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
