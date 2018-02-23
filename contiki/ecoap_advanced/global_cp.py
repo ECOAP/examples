@@ -150,7 +150,8 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            gevent.sleep(1)
+            #app_manager.update_configuration({"app_server_ipv6_address": (253, 0, 0, 0, 0, 0, 0, 0, 169, 205, 0, 255, 254, 0, 0, 1)})
+            gevent.sleep(10)
             
     except KeyboardInterrupt:
         log.debug("Exit")

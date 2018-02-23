@@ -128,7 +128,7 @@ def main():
                         err = taisc_manager.update_macconfiguration({setting[1]: int(setting[2])})
                     elif setting[0] == "app":
                         err = app_manager.update_configuration({setting[1]: int(setting[2])})
-                    print("Setting %s to %s (%s)"%(setting[1],setting[2],err)) 
+                    print("Setting %s to %s (%s)"%(setting[1],setting[2],err))
                 
         print("Starting udp example")
         print("Activating server")
@@ -176,7 +176,6 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-
             gevent.sleep(10)
             
     except KeyboardInterrupt:
