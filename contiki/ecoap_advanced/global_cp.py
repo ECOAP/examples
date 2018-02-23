@@ -126,7 +126,6 @@ def main():
                     elif setting[0] == "app":
                         err = app_manager.update_configuration({setting[1]: int(setting[2])})
                     print("Setting %s to %s (%s)"%(setting[1],setting[2],err)) 
-                
         print("Starting udp example")
         print("Activating server")
         app_manager.update_configuration({"app_activate": 1},[1])
@@ -150,7 +149,8 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            gevent.sleep(1)
+            err = app_manager.update_configuration({"coap_rto": (5,1,2,3)})
+            gevent.sleep(3)
             
     except KeyboardInterrupt:
         log.debug("Exit")
