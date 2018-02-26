@@ -32,7 +32,7 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
         _thread.start_new_thread(send_rto, (interface,rto,))
 
-    def tx_failed(self, interface, info):
+    def tx_failed(interface, info):
         pass
 
     # end specific CC functions
