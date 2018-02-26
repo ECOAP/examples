@@ -47,6 +47,7 @@ from mysql_measurement_logger import *
 from contiki.contiki_helpers.global_node_manager import *
 from contiki.contiki_helpers.taisc_manager import *
 from contiki.contiki_helpers.app_manager import *
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
 
 
 __author__ = "Carlo Vallati & Francesca Righetti"
@@ -122,6 +123,9 @@ def main():
         border_router_id = 1
         print("Set node %d as border router"%(border_router_id))
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
+
+        global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+
         global_node_manager.start_local_monitoring_cp()
         
         gevent.sleep(3)
@@ -153,7 +157,7 @@ def main():
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,60,60,100000,handle_measurement) # TODO experiment duration
 
-        cc_manager = SimpleCC(app_manager)
+        #cc_manager = SimpleCC(app_manager)
 
         gevent.sleep(10)
 
