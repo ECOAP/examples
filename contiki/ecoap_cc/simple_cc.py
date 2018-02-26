@@ -1,9 +1,18 @@
 from .base_cc import BaseCC
 from random import *
 
+import _thread
+
 class SimpleCC(BaseCC):
     def __init__(self, app_manager):
         self.app_manager = app_manager
+
+    def send_rto(self, node_id, rto):
+
+        self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
+
+        print("RTO set " + str(node_id) + "\n")
+        pass
 
     def event(self, event_name, info):
         if event_name == "coap_rx_success":
@@ -18,7 +27,8 @@ class SimpleCC(BaseCC):
 
         rto = (rtt + randint(0,rtt) , rtt * 2 + randint(0,rtt*2) , rtt * 3 + randint(0,rtt * 3),  rtt * 4 + randint(0,rtt * 4))
 
-        err = self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
+        _thread.start_new_thread(self.send_rto, (node_id, rto,))
 
     def tx_failed(self, info):
         pass
+

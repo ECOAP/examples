@@ -24,6 +24,12 @@ class GlobalNodeManager(NodeManager):
         self.mac_address_to_custom_local_cp = {}
         self.mac_address_to_custom_local_cp_callback = {}
 
+        # reference to the local control to be used
+        self.local_control = None
+
+    def set_local_control_process(self, control ):
+        self.local_control = control
+
     def __local_monitoring_cp_message_handler(self, local_monitoring_cp, mac_address, node_id, iface):
         while True:
             msg = local_monitoring_cp.recv(block=False, timeout=1)
@@ -62,7 +68,10 @@ class GlobalNodeManager(NodeManager):
                 iface = self.mac_address_to_interface[mac_address]
                 self.mac_address_to_event_cb[mac_address] = None
                 self.mac_address_to_report_cb[mac_address] = None
-                local_monitoring_cp = self.control_engine.node(node_id).hc.start_local_control_program(program=local_monitoring_program)
+                if self.local_control == None:
+                    local_monitoring_cp = self.control_engine.node(node_id).hc.start_local_control_program(program=local_monitoring_program)
+                else:
+                    local_monitoring_cp = self.control_engine.node(node_id).hc.start_local_control_program(program=self.local_control)
                 self.mac_address_to_local_monitoring_cp[mac_address] = local_monitoring_cp
                 _thread.start_new_thread(self.__local_monitoring_cp_message_handler, (local_monitoring_cp, mac_address, node_id, iface))
             else:
