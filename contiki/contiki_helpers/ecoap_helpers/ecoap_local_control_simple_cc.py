@@ -14,6 +14,10 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
     import _thread
 
     def event(interface, event_name, info):
+
+        if interface is None:
+            interface = "lowpan1"
+
         if event_name == "coap_rx_success":
             tx_success(interface,info)
         if event_name == "coap_tx_failed":
