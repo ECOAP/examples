@@ -32,10 +32,13 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
         rtt = int(info[2])
 
-        rto = (rtt + rnd.randint(0, rtt), rtt * 2 + rnd.randint(0, rtt * 2), rtt * 3 + rnd.randint(0, rtt * 3), rtt * 4 + rnd.randint(0, rtt * 4))
+        # Default CoAP CC policy, random backoff between 2s and 3s, double the interval for every retx
+
+        interval = rnd.randint(2000, 3000)
+
+        rto = (interval, interval * 2, interval * 4, interval * 8)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
-
 
     def tx_failed(interface, info):
         pass

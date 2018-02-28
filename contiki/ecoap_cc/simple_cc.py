@@ -1,24 +1,34 @@
+from gevent.threading import Lock
 from .base_cc import BaseCC
 from random import *
 
 import _thread
 
+
+
 class SimpleCC(BaseCC):
     def __init__(self, app_manager):
         self.app_manager = app_manager
+        self.lock = Lock()
 
     def send_rto(self, node_id, rto):
+        self.lock.acquire() # Il lock cosi' non risolve il problema
 
         self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
 
-        print("RTO set " + str(node_id) + "\n")
+        self.lock.release()
         pass
 
     def event(self, event_name, info):
+        self.lock.acquire()
+
         if event_name == "coap_rx_success":
             self.tx_success(info)
         if event_name == "coap_tx_failed":
             self.tx_failed(info)
+
+        self.lock.release()
+
 
     def tx_success(self, info):
         print(str(info))
