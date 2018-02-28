@@ -5,7 +5,7 @@ __version__ = "0.1.0"
 # Definition of Local Control Program that is in place for monitoring and controlling CoAP Congestion Control.
 
 
-def ecoap_local_monitoring_program_simple_cc(control_engine):
+def ecoap_local_monitoring_program_default_cc(control_engine):
     # do all needed imports here!!!
     import gevent
 
