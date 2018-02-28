@@ -36,6 +36,7 @@ import _thread
 import csv
 import os
 import sys
+import random as rand
 
 from contiki.ecoap_cc.simple_cc import *
 from measurement_logger import *
@@ -94,6 +95,7 @@ def main():
         raise
 
 
+
     ##############################
     # Load script configuration: #
     ##############################
@@ -139,11 +141,6 @@ def main():
                     elif setting[0] == "app":
                         err = app_manager.update_configuration({setting[1]: int(setting[2])})
                     print("Setting %s to %s (%s)"%(setting[1],setting[2],err)) 
-        print("Starting udp example")
-        print("Activating server")
-        app_manager.update_configuration({"app_activate": 1},[1])
-        print("Activating clients")
-        app_manager.update_configuration({"app_activate": 2},range(2,len(global_node_manager.get_mac_address_list())+1))
 
         # Register events:
         if event_config_file is not None:
@@ -158,9 +155,21 @@ def main():
                         print("Suscribe event %s returns %s"%(event_setting[1],ret_events))
 
         #for m in measurement_logger.measurement_definitions:
-        app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,10,10,100000,handle_measurement) # TODO experiment duration
+        app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,60,60,100000,handle_measurement) # TODO experiment duration
 
         #cc_manager = SimpleCC(app_manager)
+
+        gevent.sleep(10)
+
+        print("Starting udp example")
+        print("Activating server")
+        app_manager.update_configuration({"app_activate": 1},[1])
+        print("Activating clients")
+        for i in range(2,len(global_node_manager.get_mac_address_list())+1):
+            app_manager.update_configuration({"app_activate": 2},i)
+            gevent.sleep(rand.uniform(0.1, 1))
+
+
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
