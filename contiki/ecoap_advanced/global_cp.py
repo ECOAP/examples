@@ -15,6 +15,7 @@ Options:
    --measurements measurementsConfig Config file with measurement info
    --param_config_file Parameter configuration file (csv)
    --event_config_file Events configuration file (csv)
+   --congestion_policy Congestion policy
 
 Example:
    python global_cp.py --config config/localhost/global_cp_config.yaml 
@@ -48,6 +49,8 @@ from contiki.contiki_helpers.global_node_manager import *
 from contiki.contiki_helpers.taisc_manager import *
 from contiki.contiki_helpers.app_manager import *
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
+
 
 
 __author__ = "Carlo Vallati & Francesca Righetti"
@@ -61,27 +64,36 @@ param_config_file = None
 cc_manager = None
 
 def default_callback(group, node, cmd, data, interface = ""):
+    global cc_manager
+    cc_manager.lock = True
     print("{} DEFAULT CALLBACK : Group: {}, NodeName: {}, Cmd: {}, Returns: {}, interface: {}".format(datetime.datetime.now(), group, node.name, cmd, data, interface))
+    cc_manager.lock = False
 
 def handle_event(mac_address, event_name, event_value):
     global cc_manager
+    cc_manager.lock = True
     print("%s @ %s: %s"%(str(mac_address), event_name, str(event_value)))
     e = (mac_address,) + event_value
 
-    #cc_manager.event(event_name, e)
+    cc_manager.event(event_name, e)
 
     measurement_logger.log_measurement(event_name, e)
+    cc_manager.lock = False
 
 def handle_measurement(mac_address, measurement_report):
+    global cc_manager
+    cc_manager.lock = True
     for st in measurement_report:
         print("%s @ %s "%(str(mac_address), str(st)))
         m = (mac_address,) + measurement_report[st][0]
         measurement_logger.log_measurement(str(st), m )
+    cc_manager.lock = False
 
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
 
 def main():
+
     global cc_manager
     try:
         from docopt import docopt
@@ -124,7 +136,10 @@ def main():
         print("Set node %d as border router"%(border_router_id))
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
 
-        global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+        if cc_policy == "simple":
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+        if cc_policy == "default":
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)
 
         global_node_manager.start_local_monitoring_cp()
         
@@ -157,7 +172,7 @@ def main():
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,60,60,100000,handle_measurement) # TODO experiment duration
 
-        #cc_manager = SimpleCC(app_manager)
+        cc_manager = SimpleCC(app_manager)
 
         gevent.sleep(10)
 
@@ -185,7 +200,7 @@ def main():
 def load_config(args): 
     global config, node_config, \
         param_config_file, event_config_file, \
-        measurement_logger
+        measurement_logger, cc_policy
     
     # a) Verbosity:
     log_level = logging.INFO  # default
@@ -235,6 +250,9 @@ def load_config(args):
     # g) Load the event configuration file (csv):
     if args['--event_config_file'] is not None:
         event_config_file = args['--event_config_file']
+
+    if args['--congestion_policy'] is not None:
+        cc_policy = args['--congestion_policy']
 
     return
 
