@@ -1,6 +1,7 @@
 from gevent.threading import Lock
 from .base_cc import BaseCC
 from random import *
+from gevent import monkey, sleep
 
 import _thread
 import sys
@@ -13,14 +14,15 @@ class SimpleCC(BaseCC):
         self.lock = False
 
     def send_rto(self, node_id, rto):
-        #while self.lock is True:
-        #    pass
+        monkey.patch_all()
+        while self.lock is True:
+            pass
 
-        #try:
-        #    self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
-        #except:
-        #    print("Unexpected error:")
-        #    print(sys.exc_info()[0])
+        try:
+            self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
+        except:
+            print("Unexpected error:")
+            print(sys.exc_info()[0])
 
         pass
 

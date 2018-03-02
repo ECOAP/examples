@@ -39,6 +39,7 @@ import os
 import sys
 import random as rand
 
+from gevent import monkey, sleep
 from contiki.ecoap_cc.simple_cc import *
 from measurement_logger import *
 from stdout_measurement_logger import *
@@ -64,30 +65,19 @@ param_config_file = None
 cc_manager = None
 
 def default_callback(group, node, cmd, data, interface = ""):
-    global cc_manager
-    cc_manager.lock = True
     print("{} DEFAULT CALLBACK : Group: {}, NodeName: {}, Cmd: {}, Returns: {}, interface: {}".format(datetime.datetime.now(), group, node.name, cmd, data, interface))
-    cc_manager.lock = False
 
 def handle_event(mac_address, event_name, event_value):
-    global cc_manager
-    cc_manager.lock = True
     print("%s @ %s: %s"%(str(mac_address), event_name, str(event_value)))
     e = (mac_address,) + event_value
 
-    cc_manager.event(event_name, e)
-
     measurement_logger.log_measurement(event_name, e)
-    cc_manager.lock = False
 
 def handle_measurement(mac_address, measurement_report):
-    global cc_manager
-    cc_manager.lock = True
     for st in measurement_report:
         print("%s @ %s "%(str(mac_address), str(st)))
-        m = (mac_address,) + measurement_report[st][0]
+        m = (mac_address,) + (measurement_report[st][0],)
         measurement_logger.log_measurement(str(st), m )
-    cc_manager.lock = False
 
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
@@ -105,8 +95,6 @@ def main():
         https://github.com/docopt/docopt
         """)
         raise
-
-
 
     ##############################
     # Load script configuration: #
