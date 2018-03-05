@@ -1,33 +1,37 @@
 from gevent.threading import Lock
 from .base_cc import BaseCC
 from random import *
+from gevent import monkey, sleep
 
 import _thread
+import sys
 
 
 
 class SimpleCC(BaseCC):
     def __init__(self, app_manager):
         self.app_manager = app_manager
-        self.lock = Lock()
+        self.lock = False
 
     def send_rto(self, node_id, rto):
-        self.lock.acquire() # Il lock cosi' non risolve il problema
+        monkey.patch_all()
+        while self.lock is True:
+            pass
 
-        self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
+        try:
+            self.app_manager.update_async_configuration({"coap_rto": rto}, [node_id])
+        except:
+            print("Unexpected error:")
+            print(sys.exc_info()[0])
 
-        self.lock.release()
         pass
 
     def event(self, event_name, info):
-        self.lock.acquire()
 
         if event_name == "coap_rx_success":
             self.tx_success(info)
         if event_name == "coap_tx_failed":
             self.tx_failed(info)
-
-        self.lock.release()
 
 
     def tx_success(self, info):
