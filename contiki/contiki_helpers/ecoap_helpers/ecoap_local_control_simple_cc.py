@@ -38,7 +38,11 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
 
     def tx_failed(interface, info):
-        pass
+        interval = rnd.randint(2000, 3000)
+
+        rto = (interval, interval * 2, interval * 4, interval * 8)
+
+        _thread.start_new_thread(send_rto, (interface, rto,))
 
     # end specific CC functions
 
