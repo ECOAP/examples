@@ -2,7 +2,7 @@ measurement_config:
     module: file_measurement_logger
     class_name: FileMeasurementLogger
     kwargs:
-        directory: /home/carlo/Testbed/wishful/test_ecoap/examples/contiki/stats/
+        directory: /home/francesca/Desktop/WISHFUL/wishful/examples/contiki/stats/
         measurement_db_name: "coap_stats"
         measurement_definitions:
             coap_tx_success: "msgType:int32 timestamp:int32 mid:int32 ip1:uint8 ip2:uint8 ip3:uint8 ip4:uint8 ip5:uint8 ip6:uint8 ip7:uint8 ip8:uint8 ip9:uint8 ip10:uint8 ip11:uint8 ip12:uint8 ip13:uint8 ip14:uint8 ip15:uint8 ip16:uint8"

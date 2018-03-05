@@ -47,7 +47,7 @@ from mysql_measurement_logger import *
 from contiki.contiki_helpers.global_node_manager import *
 from contiki.contiki_helpers.taisc_manager import *
 from contiki.contiki_helpers.app_manager import *
-from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
 
 
 __author__ = "Carlo Vallati & Francesca Righetti"
@@ -124,7 +124,7 @@ def main():
         print("Set node %d as border router"%(border_router_id))
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
 
-        global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+        global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)
 
         global_node_manager.start_local_monitoring_cp()
         
