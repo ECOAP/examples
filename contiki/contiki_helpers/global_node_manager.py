@@ -117,6 +117,15 @@ class GlobalNodeManager(NodeManager):
             msg = {'interface': [self.mac_address_to_interface[mac_address]], 'command': 'GET_MEASUREMENTS_PERIODIC', 'upi_type': upi_type, 'measurement_key_list': measurement_key_list, 'collect_period': collect_period, 'report_period': report_period, 'num_iterations': num_iterations}
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
 
+    def send_downstream(self, msg, callback, mac_address_list=None ):
+        if mac_address_list is None:
+            mac_address_list = self.mac_address_list
+        for mac_address in mac_address_list:
+            self.mac_address_to_report_cb[mac_address] = callback
+            self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
+
+
+
     def __update_mac_address_list(self, node_id):
         gevent.sleep(2)
         self.control_engine._clear_call_context()

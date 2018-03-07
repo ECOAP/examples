@@ -40,7 +40,7 @@ import sys
 import random as rand
 
 from gevent import monkey, sleep
-from contiki.ecoap_cc.simple_cc import *
+from contiki.ecoap_global_cc.rpl_global_cc import *
 from measurement_logger import *
 from stdout_measurement_logger import *
 from file_measurement_logger import *
@@ -51,6 +51,7 @@ from contiki.contiki_helpers.taisc_manager import *
 from contiki.contiki_helpers.app_manager import *
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_rpl_cc import ecoap_local_monitoring_program_rpl_cc
 
 
 __author__ = "Carlo Vallati & Francesca Righetti"
@@ -77,6 +78,9 @@ def handle_measurement(mac_address, measurement_report):
         print("%s @ %s "%(str(mac_address), str(st)))
         m = (mac_address,) + (measurement_report[st][0],)
         measurement_logger.log_measurement(str(st), m )
+
+    if cc_manager is not None:
+        cc_manager.report(mac_address, measurement_report)
 
 def event_cb(mac_address, event_name, event_value):
     _thread.start_new_thread(handle_event, (mac_address, event_name, event_value))
@@ -123,6 +127,9 @@ def main():
         print("Set node %d as border router"%(border_router_id))
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
 
+        if cc_policy == "rpl":
+            global_cc_manager = RPLGlobalCC(global_node_manager)
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
         if cc_policy == "simple":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
         if cc_policy == "default":
@@ -158,8 +165,6 @@ def main():
 
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,60,60,100000,handle_measurement) # TODO experiment duration
-
-        cc_manager = SimpleCC(app_manager)
 
         gevent.sleep(10)
 

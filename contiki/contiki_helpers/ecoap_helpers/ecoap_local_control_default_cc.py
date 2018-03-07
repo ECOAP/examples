@@ -26,6 +26,9 @@ def ecoap_local_monitoring_program_default_cc(control_engine):
     def send_rto(interface,rto):
         control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
 
+        # Send back to the controller the rto for statistical purposes
+        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": rto})
+
         pass
 
     def tx_success(interface, info):

@@ -5,7 +5,7 @@ __version__ = "0.1.0"
 # Definition of Local Control Program that is in place for monitoring and controlling CoAP Congestion Control.
 
 
-def ecoap_local_monitoring_program_simple_cc(control_engine):
+def ecoap_local_monitoring_program_rpl_cc(control_engine):
     # do all needed imports here!!!
     import gevent
 
@@ -13,8 +13,9 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
     import random as rnd
     import _thread
 
-    historic_rtt = rnd.randint(2000, 3000)
-    alp = 0.9
+    max_rank = 127
+    my_rank = 127
+    rto_prev = 0
 
     def event(interface, event_name, info):
 
@@ -26,6 +27,15 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
         if event_name == "coap_tx_failed":
             tx_failed(interface, info)
 
+    def new_max_rank(interface, updated_max_rank):
+        nonlocal max_rank
+        max_rank = updated_max_rank
+        print("NEW MAX RANK "+str(new_max_rank))
+
+    def update_rank(new_rank):
+        nonlocal my_rank
+        my_rank = new_rank
+
     def send_rto(interface,rto):
         control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
 
@@ -36,26 +46,24 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
     def tx_success(interface, info):
 
-        nonlocal historic_rtt
-        nonlocal alp
-
         rtt = int(info[2])
 
-        historic_rtt = int(rtt * (1-alp) + historic_rtt * alp)
+        # Default CoAP CC policy, random backoff between 2s and 3s, double the interval for every retx
 
-        rto = (historic_rtt + rnd.randint(0, historic_rtt), historic_rtt * 2 + rnd.randint(0, historic_rtt * 2), historic_rtt * 3 + rnd.randint(0, historic_rtt * 3), historic_rtt * 4 + rnd.randint(0, historic_rtt * 4))
+        interval = rnd.randint(2000, 3000)
+
+        rto = (interval, interval * 2, interval * 4, interval * 8)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
-
 
     def tx_failed(interface, info):
 
-        nonlocal historic_rtt
+        interval = rnd.randint(2000, 3000)
 
-        rto = (historic_rtt + rnd.randint(0, historic_rtt), historic_rtt * 2 + rnd.randint(0, historic_rtt * 2),
-               historic_rtt * 3 + rnd.randint(0, historic_rtt * 3), historic_rtt * 4 + rnd.randint(0, historic_rtt * 4))
+        rto = (interval, interval * 2, interval * 4, interval * 8)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
+
 
     # end specific CC functions
 
@@ -71,6 +79,11 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
     def report_callback(interface, report):
         control_engine.send_upstream({"msg_type": "report", "interface": interface, "report": report})
+
+        for st in report:
+            if st == "rpl_rank":
+                update_rank(int(report[st][0]))
+
         pass
 
     print(("local monitor cp started - Name: {}, Id: {} - STARTED".format(control_engine.name, control_engine.id)))
@@ -99,6 +112,8 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
                         control_engine.blocking(False).iface(iface).radio.get_measurements_periodic(msg['measurement_key_list'], msg['collect_period'], msg['report_period'], msg['num_iterations'], report_callback)
                     else:
                         print("periodic measurement collector unsupported upi_type {}".format(msg['upi_type']))
+            elif msg['command'] == 'SET_MAX_RANK':
+                new_max_rank(int(msg['max_rank']))
             else:
                 print("local monitoring unknown command {}".format(msg['command']))
         elif type(msg) is dict:
