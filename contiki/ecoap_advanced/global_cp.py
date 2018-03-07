@@ -52,6 +52,7 @@ from contiki.contiki_helpers.app_manager import *
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_rpl_cc import ecoap_local_monitoring_program_rpl_cc
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_cocoa_cc import ecoap_local_monitoring_program_cocoa_cc
 
 
 __author__ = "Carlo Vallati & Francesca Righetti"
@@ -130,9 +131,12 @@ def main():
         if cc_policy == "rpl":
             global_cc_manager = RPLGlobalCC(global_node_manager)
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
-        if cc_policy == "simple":
+        if cc_policy == "cocoa":
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
+        elif cc_policy == "simple":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
-        if cc_policy == "default":
+        # elif cc_policy == "default":
+        else:
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)
 
         global_node_manager.start_local_monitoring_cp()
