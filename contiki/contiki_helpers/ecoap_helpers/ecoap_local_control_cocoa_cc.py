@@ -35,7 +35,12 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
             tx_failed(interface, info)
 
     def send_rto(interface, rto):
+
         control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
+
+        # Send back to the controller the rto for statistical purposes
+        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": rto})
+
 
         pass
 
@@ -116,18 +121,21 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         FACTOR = 1.5
         rto_init = rnd.randrange(rto, int(FACTOR * rto))
         if int(rto) < 1000:
-            vbf = 3000
+            vbf = 3
         elif 1000 >= int(rto) <= 3000:
-            vbf = 2000
+            vbf = 2
         else:
-            vbf = 1300
+            vbf = 1.3
 
         rto_lst = [rto_init]
         rto_previous = rto_init
         for i in range(1, 4):
             rto_new = int(rto_previous * vbf)
             rto_previous = rto_new
-            rto_lst.append(rto_new)
+            if rto_new < 4294967295:
+                rto_lst.append(rto_new)
+            else:
+                rto_lst.append(4294967295)
         rto_tuple = tuple(rto_lst)
         return rto_tuple
 

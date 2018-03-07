@@ -1,2 +1,2 @@
 __author__ = 'carlovallati'
-from contiki.ecoap_cc import *
+from contiki.ecoap_global_cc import *
