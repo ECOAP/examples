@@ -13,6 +13,9 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
     import random as rnd
     import _thread
 
+    historic_rtt = rnd.randint(2000, 3000)
+    alp = 0.9
+
     def event(interface, event_name, info):
 
         #if interface is None:
@@ -30,17 +33,24 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
 
     def tx_success(interface, info):
 
+        nonlocal historic_rtt
+        nonlocal alp
+
         rtt = int(info[2])
 
-        rto = (rtt + rnd.randint(0, rtt), rtt * 2 + rnd.randint(0, rtt * 2), rtt * 3 + rnd.randint(0, rtt * 3), rtt * 4 + rnd.randint(0, rtt * 4))
+        historic_rtt = int(rtt * (1-alp) + historic_rtt * alp)
+
+        rto = (historic_rtt + rnd.randint(0, historic_rtt), historic_rtt * 2 + rnd.randint(0, historic_rtt * 2), historic_rtt * 3 + rnd.randint(0, historic_rtt * 3), historic_rtt * 4 + rnd.randint(0, historic_rtt * 4))
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
 
     def tx_failed(interface, info):
-        interval = rnd.randint(2000, 3000)
 
-        rto = (interval, interval * 2, interval * 4, interval * 8)
+        nonlocal historic_rtt
+
+        rto = (historic_rtt + rnd.randint(0, historic_rtt), historic_rtt * 2 + rnd.randint(0, historic_rtt * 2),
+               historic_rtt * 3 + rnd.randint(0, historic_rtt * 3), historic_rtt * 4 + rnd.randint(0, historic_rtt * 4))
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
