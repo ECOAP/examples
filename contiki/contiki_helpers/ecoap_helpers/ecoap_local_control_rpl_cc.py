@@ -112,7 +112,8 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
                         control_engine.blocking(False).iface(iface).radio.get_measurements_periodic(msg['measurement_key_list'], msg['collect_period'], msg['report_period'], msg['num_iterations'], report_callback)
                     else:
                         print("periodic measurement collector unsupported upi_type {}".format(msg['upi_type']))
-            elif msg['command'] == 'SET_MAX_RANK':
+            elif msg['info'] == 'rpl':
+                print("received rank")
                 new_max_rank(int(msg['max_rank']))
             else:
                 print("local monitoring unknown command {}".format(msg['command']))

@@ -117,11 +117,14 @@ class GlobalNodeManager(NodeManager):
             msg = {'interface': [self.mac_address_to_interface[mac_address]], 'command': 'GET_MEASUREMENTS_PERIODIC', 'upi_type': upi_type, 'measurement_key_list': measurement_key_list, 'collect_period': collect_period, 'report_period': report_period, 'num_iterations': num_iterations}
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
 
-    def send_downstream(self, msg, callback, mac_address_list=None ):
+    def send_downstream(self, msg, mac_address_list=None ):
         if mac_address_list is None:
             mac_address_list = self.mac_address_list
         for mac_address in mac_address_list:
-            self.mac_address_to_report_cb[mac_address] = callback
+            #msg['interface'] = [self.mac_address_to_interface[mac_address]]
+            print("SEND DOWNSTREAM")
+            print(str(msg))
+            print(str(mac_address))
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
 
 

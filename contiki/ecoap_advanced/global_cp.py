@@ -129,7 +129,7 @@ def main():
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
 
         if cc_policy == "rpl":
-            global_cc_manager = RPLGlobalCC(global_node_manager)
+            cc_manager = RPLGlobalCC(global_node_manager)
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
         if cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)

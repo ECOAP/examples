@@ -13,6 +13,7 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
     import random as rnd
     import _thread
     import time
+    import math
 
     rto_strong = 2000
     rto_weak = 2000
@@ -118,8 +119,9 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
     # end specific CC functions
 
     def compute_rto_init(rto):
+
         FACTOR = 1.5
-        rto_init = rnd.randrange(rto, int(FACTOR * rto))
+        rto_init = rnd.randrange(rto, int(math.ceil(FACTOR * rto)))
         if int(rto) < 1000:
             vbf = 3
         elif 1000 >= int(rto) <= 3000:
