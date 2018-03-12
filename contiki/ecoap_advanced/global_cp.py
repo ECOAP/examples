@@ -77,8 +77,9 @@ def handle_event(mac_address, event_name, event_value):
 def handle_measurement(mac_address, measurement_report):
     for st in measurement_report:
         print("%s @ %s "%(str(mac_address), str(st)))
-        m = (mac_address,) + (measurement_report[st][0],)
-        measurement_logger.log_measurement(str(st), m )
+        if len(measurement_report[st]) > 0:
+            m = (mac_address,) + (measurement_report[st][0],)
+            measurement_logger.log_measurement(str(st), m )
 
     if cc_manager is not None:
         cc_manager.report(mac_address, measurement_report)

@@ -55,7 +55,7 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         while True:
             now = int(round(time.time() * 1000))
             if rto_overall > DEFAULT and now - timestamp > THRESHOLD:
-                rto_overall = int((2 + rto_overall) / rto_overall)
+                rto_overall = int((2000 + rto_overall) / rto_overall * 1000)
                 rto = compute_rto_init(rto_overall)
                 timestamp = now
                 _thread.start_new_thread(send_rto, (interface, rto,))
