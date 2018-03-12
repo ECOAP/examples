@@ -1,15 +1,16 @@
 from random import *
 
-import _thread
-import sys
 import gevent
+import _thread
+import datetime
+import wishful_controller
 
 
 class RPLGlobalCC():
 
 
-    def __init__(self, global_controller):
-        self.global_controller = global_controller
+    def __init__(self, send_function):
+        self.send = send_function
 
         self.max_rank = 127
 
@@ -17,14 +18,12 @@ class RPLGlobalCC():
 
     def periodic_send(self):
         while True:
-            print("invio")
             self.send_max_rank()
             gevent.sleep(60)
 
     def send_max_rank(self):
-        print("send max rank")
-        msg = {'info': "rpl", 'max_rank': str(self.max_rank)}
-        self.global_controller.send_downstream(msg)
+        msg = {'info': 'rpl', 'max_rank': str(self.max_rank)}
+        self.send(msg)
 
         pass
 

@@ -65,6 +65,12 @@ log = logging.getLogger('contiki_global_control_program')
 param_config_file = None
 cc_manager = None
 
+message_queue = []
+
+
+def add_message(msg):
+    message_queue.append(msg)
+
 def default_callback(group, node, cmd, data, interface = ""):
     print("{} DEFAULT CALLBACK : Group: {}, NodeName: {}, Cmd: {}, Returns: {}, interface: {}".format(datetime.datetime.now(), group, node.name, cmd, data, interface))
 
@@ -89,7 +95,7 @@ def event_cb(mac_address, event_name, event_value):
 
 def main():
 
-    global cc_manager
+    global cc_manager, message_queue
     try:
         from docopt import docopt
     except:
@@ -130,8 +136,8 @@ def main():
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00],border_router_id)
 
         if cc_policy == "rpl":
-            cc_manager = RPLGlobalCC(global_node_manager)
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
+            cc_manager = RPLGlobalCC(add_message)
         if cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
@@ -185,6 +191,9 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
+            while message_queue:
+                mess = message_queue.pop(0)
+                global_node_manager.send_downstream(mess)
             gevent.sleep(10)
 
             

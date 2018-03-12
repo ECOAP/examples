@@ -46,21 +46,39 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
     def tx_success(interface, info):
 
+        nonlocal my_rank, max_rank, rto_prev
+
         rtt = int(info[2])
 
-        # Default CoAP CC policy, random backoff between 2s and 3s, double the interval for every retx
+        if rto_prev == 0 :
+            rto_prev = rtt
 
-        interval = rnd.randint(2000, 3000)
+        # RPL CC policy
+
+        interval = int((1-my_rank/max_rank) * rtt + my_rank/max_rank * rto_prev)
 
         rto = (interval, interval * 2, interval * 4, interval * 8)
+
+        rto_prev = interval
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
     def tx_failed(interface, info):
 
-        interval = rnd.randint(2000, 3000)
+        nonlocal my_rank, max_rank, rto_prev
+
+        rtt = int(info[2])
+
+        if rto_prev == 0 :
+            rto_prev = rtt
+
+        # RPL CC policy
+
+        interval = int((1-my_rank/max_rank) * rtt + my_rank/max_rank * rto_prev)
 
         rto = (interval, interval * 2, interval * 4, interval * 8)
+
+        rto_prev = interval
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
@@ -112,12 +130,14 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
                         control_engine.blocking(False).iface(iface).radio.get_measurements_periodic(msg['measurement_key_list'], msg['collect_period'], msg['report_period'], msg['num_iterations'], report_callback)
                     else:
                         print("periodic measurement collector unsupported upi_type {}".format(msg['upi_type']))
-            elif msg['info'] == 'rpl':
-                print("received rank")
-                new_max_rank(int(msg['max_rank']))
             else:
                 print("local monitoring unknown command {}".format(msg['command']))
-        elif type(msg) is dict:
+
+        if type(msg) is dict and 'info' in msg:
+                if msg['info'] == 'rpl':
+                    print("received rank")
+                    new_max_rank(int(msg['max_rank']))
+        else:
             print("local monitoring unknown msg type {}".format(msg))
 
         gevent.sleep(1)
