@@ -33,8 +33,6 @@ def ecoap_local_monitoring_program_default_cc(control_engine):
 
     def tx_success(interface, info):
 
-        rtt = int(info[2])
-
         # Default CoAP CC policy, random backoff between 2s and 3s, double the interval for every retx
 
         interval = rnd.randint(2000, 3000)

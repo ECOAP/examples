@@ -86,7 +86,7 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         lambda_strong = 0.5
         lambda_weak = 0.25
 
-        r = int(info[2])
+        r = int(info[1])
         retransmissions = int(info[3]) > 0
         if rtt_strong is None:
             rtt_strong = r

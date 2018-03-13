@@ -39,7 +39,7 @@ def ecoap_local_monitoring_program_simple_cc(control_engine):
         nonlocal historic_rtt
         nonlocal alp
 
-        rtt = int(info[2])
+        rtt = int(info[1])
 
         historic_rtt = int(rtt * (1-alp) + historic_rtt * alp)
 

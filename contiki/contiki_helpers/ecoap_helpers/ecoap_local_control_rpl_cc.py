@@ -27,7 +27,7 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
         if event_name == "coap_tx_failed":
             tx_failed(interface, info)
 
-    def new_max_rank(interface, updated_max_rank):
+    def new_max_rank(updated_max_rank):
         nonlocal max_rank
         max_rank = updated_max_rank
         print("NEW MAX RANK "+str(new_max_rank))
@@ -48,7 +48,7 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
         nonlocal my_rank, max_rank, rto_prev
 
-        rtt = int(info[2])
+        rtt = int(info[1])
 
         if rto_prev == 0 :
             rto_prev = rtt
@@ -67,7 +67,7 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
         nonlocal my_rank, max_rank, rto_prev
 
-        rtt = int(info[2])
+        rtt = int(info[1])
 
         if rto_prev == 0 :
             rto_prev = rtt
@@ -133,10 +133,10 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
             else:
                 print("local monitoring unknown command {}".format(msg['command']))
 
-        if type(msg) is dict and 'info' in msg:
-                if msg['info'] == 'rpl':
-                    print("received rank")
-                    new_max_rank(int(msg['max_rank']))
+        elif msg is not None and type(msg) is dict and 'info' in msg.keys():
+            if msg['info'] == 'rpl':
+                print("received rank")
+                new_max_rank(int(msg['max_rank']))
         else:
             print("local monitoring unknown msg type {}".format(msg))
 
