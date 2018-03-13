@@ -49,12 +49,12 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         nonlocal timestamp
         nonlocal rto_overall
 
-        DEFAULT = 2000
-        THRESHOLD = 30000
+        DEFAULT = 3000
+        THRESHOLD = 60000
 
         while True:
             now = int(round(time.time() * 1000))
-            if rto_overall > DEFAULT and now - timestamp > THRESHOLD:
+            if rto_overall > DEFAULT and now - timestamp > 4 * rto_overall:
                 rto_overall = int((2000 + rto_overall) / rto_overall * 1000)
                 rto = compute_rto_init(rto_overall)
                 timestamp = now
@@ -64,7 +64,7 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
                 rto = compute_rto_init(rto_overall)
                 timestamp = now
                 _thread.start_new_thread(send_rto, (interface, rto,))
-            gevent.sleep(100)
+            gevent.sleep(1)
 
 
     def tx_success(interface, info):
@@ -79,8 +79,8 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         nonlocal timestamp
         nonlocal agingThread_started
 
-        alpha = 0.25
-        beta = 0.125
+        alpha = 0.125
+        beta =  0.25
         k_strong = 4
         k_weak = 1
         lambda_strong = 0.5
@@ -97,11 +97,15 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
             rtt_strong = (1 - alpha) * rtt_strong + alpha * r
             rttvar_strong = (1 - beta) * rttvar_strong + beta * abs(rtt_strong - r)
             rto_strong = rtt_strong + k_strong * rttvar_strong
+            if rto_strong  > 60000:
+                rto_strong = 60000
             rto_overall = int(lambda_strong * rto_strong + (1 - lambda_strong) * rto_overall)
         else:
             rtt_weak = (1 - alpha) * rtt_weak + alpha * r
             rttvar_weak = (1 - beta) * rttvar_weak + beta * abs(rtt_weak - r)
             rto_weak = rtt_weak + k_weak * rttvar_weak
+            if rto_weak  > 60000:
+                rto_weak = 60000
             rto_overall = int(lambda_weak * rto_weak + (1 - lambda_weak) * rto_overall)
         timestamp = int(round(time.time() * 1000))
 
