@@ -30,10 +30,11 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
     def new_max_rank(updated_max_rank):
         nonlocal max_rank
         max_rank = updated_max_rank
-        print("NEW MAX RANK "+str(new_max_rank))
 
     def update_rank(new_rank):
         nonlocal my_rank
+        print ("my rank")
+        print (str(new_rank))
         my_rank = new_rank
 
     def send_rto(interface,rto):
@@ -55,7 +56,11 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
         # RPL CC policy
 
-        interval = int((1-my_rank/max_rank) * rtt + my_rank/max_rank * rto_prev)
+        a = float(my_rank / max_rank)
+        if a > 1.0:
+            a = 1.0
+
+        interval = int((1-a) * rtt + a * rto_prev)
 
         rto = (interval, interval * 2, interval * 4, interval * 8)
 
@@ -74,7 +79,10 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
         # RPL CC policy
 
-        interval = int((1-my_rank/max_rank) * rtt + my_rank/max_rank * rto_prev)
+        a = float(my_rank / max_rank)
+        if a > 1.0:
+            a = 1.0
+        interval = int((1-a) * rtt + a * rto_prev)
 
         rto = (interval, interval * 2, interval * 4, interval * 8)
 
@@ -133,11 +141,11 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
             else:
                 print("local monitoring unknown command {}".format(msg['command']))
 
-        elif msg is not None and type(msg) is dict and 'info' in msg.keys():
+        elif msg is not None and type(msg) is dict and 'info' in msg:
             if msg['info'] == 'rpl':
-                print("received rank")
                 new_max_rank(int(msg['max_rank']))
-        else:
+
+        elif msg is not None and type(msg) is dict:
             print("local monitoring unknown msg type {}".format(msg))
 
         gevent.sleep(1)

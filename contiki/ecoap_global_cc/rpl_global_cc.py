@@ -24,7 +24,6 @@ class RPLGlobalCC():
     def send_max_rank(self):
         msg = {'info': 'rpl', 'max_rank': str(self.max_rank)}
         self.send(msg)
-
         pass
 
     def report(self, mac_address, measurement_report):

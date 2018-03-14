@@ -138,7 +138,7 @@ def main():
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
             cc_manager = RPLGlobalCC(add_message)
-        if cc_policy == "cocoa":
+        elif cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
