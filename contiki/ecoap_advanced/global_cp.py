@@ -176,6 +176,7 @@ def main():
 
         #for m in measurement_logger.measurement_definitions:
         app_manager.get_measurements_periodic(measurement_logger.measurement_definitions,60,60,100000,handle_measurement) # TODO experiment duration
+        taisc_manager.get_measurements_periodic(measurement_logger.measurement_definitions, 60, 60, 100000,handle_measurement)  # TODO experiment duration
 
         gevent.sleep(10)
 
