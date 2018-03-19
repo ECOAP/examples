@@ -60,6 +60,7 @@ if __name__ == "__main__":
 
     log_level = logging.INFO  # default
     if args['--verbose']:
+        print("DEBUG")
         log_level = logging.DEBUG
     elif args['--quiet']:
         log_level = logging.ERROR
