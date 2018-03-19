@@ -10,4 +10,4 @@ measurement_config:
             app_stats: "numRx:int32 numRxLoss:int32 numTx:int32 numTxLoss:int32"
             ipv6_stats: "numRx:int32 numRxLoss:int32 numTx:int32 numTxLoss:int32"
             rpl_rank: "rank:uint16"
-
+            IEEE802154_measurement_macStats: "timeDiff:uint32 numTxRequest:uint32 numTxRequestFail:uint32 numTxAttempt:uint32 numTxSuccess:uint32 numTxFailu:int32 numTxBusy:uint32 numTxNoAck:uint32 numTxCollision:uint32 numTxNTFull:uint32 numRx:uint32 numBackoffs:uint16 report_id:uint16"

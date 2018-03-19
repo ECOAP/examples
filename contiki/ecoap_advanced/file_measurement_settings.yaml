@@ -13,3 +13,4 @@ measurement_config:
             rpl_rank: "rank:uint16" 
             rpl_preferred_parent: "ip1:uint8 ip2:uint8 ip3:uint8 ip4:uint8 ip5:uint8 ip6:uint8 ip7:uint8 ip8:uint8 ip9:uint8 ip10:uint8 ip11:uint8 ip12:uint8 ip13:uint8 ip14:uint8 ip15:uint8 ip16:uint8"
             coap_rto: "rto0:int rto1:int rto2:int rto3:int"
+            IEEE802154_measurement_macStats: "timeDiff:uint32 numTxRequest:uint32 numTxRequestFail:uint32 numTxAttempt:uint32 numTxSuccess:uint32 numTxFailu:int32 numTxBusy:uint32 numTxNoAck:uint32 numTxCollision:uint32 numTxNTFull:uint32 numRx:uint32 numBackoffs:uint16 report_id:uint16"
