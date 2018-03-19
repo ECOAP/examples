@@ -211,7 +211,7 @@ def main():
         gevent.sleep(2)
 
         print("Activating clients")
-        for i in range(3, len(global_node_manager.get_mac_address_list()) + 1):
+        for i in range(2, len(global_node_manager.get_mac_address_list()) + 1):
             app_manager.update_configuration({"app_activate": 2}, i)
             gevent.sleep(rand.uniform(0.1, 5))
 
