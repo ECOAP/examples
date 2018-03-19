@@ -80,7 +80,7 @@ def ecoap_local_monitoring_program_cocoa_cc(control_engine):
         nonlocal agingThread_started
 
         alpha = 0.125
-        beta =  0.25
+        beta = 0.25
         k_strong = 4
         k_weak = 1
         lambda_strong = 0.5

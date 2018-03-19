@@ -33,8 +33,7 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
     def update_rank(new_rank):
         nonlocal my_rank
-        print ("my rank")
-        print (str(new_rank))
+
         my_rank = new_rank
 
     def send_rto(interface,rto):
