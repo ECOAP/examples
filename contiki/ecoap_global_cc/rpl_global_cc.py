@@ -16,12 +16,17 @@ class RPLGlobalCC():
 
         self.thread_started = False
 
+        self.ranks = []
+
     def periodic_send(self):
         while True:
-            self.send_max_rank()
             gevent.sleep(60)
+            self.send_max_rank()
+            self.ranks = []
 
     def send_max_rank(self):
+        self.max_rank = max(self.ranks)
+        print("Sending max rank %s" % str(self.max_rank))
         msg = {'info': 'rpl', 'max_rank': str(self.max_rank)}
         self.send(msg)
         pass
@@ -31,8 +36,9 @@ class RPLGlobalCC():
             print("%s @ %s " % (str(mac_address), str(st)))
             if st == "rpl_rank":
                 rank = int(measurement_report[st][0])
-                if rank > self.max_rank:
-                    self.max_rank = rank
+                #if rank > self.max_rank:
+                    #self.max_rank = rank
+                self.ranks.append(rank)
 
         if self.thread_started is False:
             print("start thread")
