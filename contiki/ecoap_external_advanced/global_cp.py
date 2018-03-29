@@ -202,7 +202,7 @@ def main():
         print("Starting udp example")
         print("Activating server")
 
-        global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.create_packetflow_sink(port=5683)
+        global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.create_packetflow_sink(port=5683)
 
         #gevent.sleep(2)
 
@@ -218,9 +218,9 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            global global_node_manager
-            ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
-            print(str(ret))
+      #      global global_node_manager
+        #     ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
+         #   print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
                 global_node_manager.send_downstream(mess)
