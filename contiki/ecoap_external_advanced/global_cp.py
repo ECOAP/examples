@@ -142,7 +142,7 @@ def main():
 
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
-            cc_manager = RPLGlobalCC(add_message)
+            cc_manager = RPLGlobalCC(add_message, len(global_node_manager.get_mac_address_list()))
         elif cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
@@ -202,7 +202,11 @@ def main():
         print("Starting udp example")
         print("Activating server")
 
-        global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.create_packetflow_sink(port=5683)
+        global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.create_packetflow_sink(port=5683)
+
+        #global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.subscribe_events_net('coap_message_rx', event_cb, 0)
+
+        #app_manager.subscribe_events_interface(['coap_block_rx'], event_cb, 'lo', global_node_manager.mac_address_to_node_id[1] )
 
         #gevent.sleep(2)
 
@@ -218,13 +222,13 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            global global_node_manager
-            ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
-            print(str(ret))
+            #global global_node_manager
+            #ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
+            #print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
                 global_node_manager.send_downstream(mess)
-            gevent.sleep(10)
+            gevent.sleep(5)
 
 
     except KeyboardInterrupt:
