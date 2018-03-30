@@ -1,2 +1,4 @@
 app,app_payload_length,95
 app,app_send_interval,10000
+app,app_msg_in_burst,2
+app,app_burst_interval,60
