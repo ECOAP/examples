@@ -32,9 +32,7 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
         nonlocal current_rto_max
         nonlocal  current_factor
 
-        r = eval(rto_set)
-
-        r = r[control_engine.id]
+        r = rto_set
 
         current_rto_min = r[0]
         current_rto_max = r[1]

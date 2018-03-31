@@ -40,6 +40,9 @@ class RPLGlobalCC():
         n = node
         path = []
 
+        if node not in self.pp:
+            return path
+
         while n != 1 and nh < 20:
             if self.pp[n] == 0:
                 path = []
@@ -77,7 +80,7 @@ class RPLGlobalCC():
 
             # Calculate NEW RTO
             for i in range(1,self.num_nodes+1):
-                if self.hops_to_root[i] != 0 :
+                if self.hops_to_root[i] != 0 and self.total_flows > 0:
                     self.RTOs[i] = (100 * self.hops_to_root[i], 150 * self.hops_to_root[i], 1.5 + 1.5 * self.num_flows[i]/self.total_flows )
                 else:
                     self.RTOs[i] = (2000, 3000, 1.5)
@@ -90,9 +93,10 @@ class RPLGlobalCC():
 
     def send_data(self):
 
-        msg = {'info': 'RTO', 'RTO': str(self.RTOs)}
+        for i in range(1, self.num_nodes + 1):
+            msg = {'info': 'RTO', 'RTO': str(self.RTOs[i])}
 
-        self.send(msg)
+            self.send((i,msg))
 
     def report(self, mac_address, measurement_report):
         for st in measurement_report:
@@ -112,6 +116,6 @@ class RPLGlobalCC():
                         self.thread_started = True
                         _thread.start_new_thread(self.periodic_send, ())
 
-                    self.num_updates = 0
+                    self.num_updates  = 0
 
 

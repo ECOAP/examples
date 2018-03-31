@@ -184,9 +184,9 @@ def main():
         taisc_manager.get_measurements_periodic(measurement_logger.measurement_definitions, 60, 60, 100000, handle_measurement)  # TODO experiment duration
 
         # Set routing operations (it sould be done on the root node, here we assume that the agent of the root runs on the same host of the controller)
-        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1", shell=True,
+            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0", shell=True,
                                     universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:
@@ -227,7 +227,11 @@ def main():
             #print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
-                global_node_manager.send_downstream(mess)
+                if type(mess) is dict:
+                    # Message to all
+                    global_node_manager.send_downstream(mess)
+                else:
+                    global_node_manager.send_downstream(mess[1],[mess[0]])
             gevent.sleep(5)
 
 
@@ -236,9 +240,9 @@ def main():
         global_node_manager.stop()
         log.debug("Controller exits")
 
-        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1", shell=True,
+            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0", shell=True,
                             universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -D INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:
