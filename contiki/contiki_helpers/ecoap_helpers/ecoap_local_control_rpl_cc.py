@@ -41,10 +41,10 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
 
     def send_rto(interface,rto):
-        control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': str(rto)})
+        control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
 
         # Send back to the controller the rto for statistical purposes
-        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": str(rto)})
+        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": rto})
 
         pass
 
@@ -54,10 +54,10 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
         nonlocal current_rto_max
         nonlocal  current_factor
 
-        interval1 = int(rnd.randint(current_rto_min, current_rto_max))
-        interval2  = int(rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor)))
-        interval3 = int(rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor)))
-        interval4 = int(rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor)))
+        interval1 = rnd.randint(current_rto_min, current_rto_max)
+        interval2  = rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor))
+        interval3 = rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor))
+        interval4 = rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor))
 
         rto = (interval1, interval2, interval3, interval4)
 
@@ -69,10 +69,11 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
         nonlocal current_rto_max
         nonlocal  current_factor
 
-        interval1 = int(rnd.randint(current_rto_min, current_rto_max))
-        interval2  = int(rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor)))
-        interval3 = int(rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor)))
-        interval4 = int(rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor)))
+
+        interval1 = rnd.randint(current_rto_min, current_rto_max)
+        interval2  = rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor))
+        interval3 = rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor))
+        interval4 = rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor))
         rto = (interval1, interval2, interval3, interval4)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
