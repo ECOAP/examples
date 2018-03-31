@@ -34,17 +34,17 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
         r = rto_set
 
-        current_rto_min = r[0]
-        current_rto_max = r[1]
-        current_factor = r[2]
+        current_rto_min = int(r[0])
+        current_rto_max = int(r[1])
+        current_factor = int(r[2])
 
 
 
     def send_rto(interface,rto):
-        control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
+        control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': str(rto)})
 
         # Send back to the controller the rto for statistical purposes
-        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": rto})
+        control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": str(rto)})
 
         pass
 

@@ -231,7 +231,8 @@ def main():
                     # Message to all
                     global_node_manager.send_downstream(mess)
                 else:
-                    global_node_manager.send_downstream(mess[1],[mess[0]])
+                    if mess[0] in global_node_manager.get_mac_address_list():
+                        global_node_manager.send_downstream(mess[1],[mess[0]])
             gevent.sleep(5)
 
 
