@@ -81,7 +81,7 @@ class RPLGlobalCC():
             # Calculate NEW RTO
             for i in range(1,self.num_nodes+1):
                 if self.hops_to_root[i] != 0 and self.total_flows > 0:
-                    self.RTOs[i] = (100 * self.hops_to_root[i], 150 * self.hops_to_root[i], round(1.5 + 1.5 * self.num_flows[i]/self.total_flows, 2) )
+                    self.RTOs[i] = (250 * self.hops_to_root[i], 500 * self.hops_to_root[i], round(2 + 2 * self.num_flows[i]/self.total_flows, 2) )
                 else:
                     self.RTOs[i] = (2000, 3000, 1.5)
 

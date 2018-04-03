@@ -127,7 +127,7 @@ def main():
         # Setup the sensor node helpers:
         global_node_manager = GlobalNodeManager(config)
         app_manager = AppManager(global_node_manager)
-        taisc_manager = TAISCMACManager(global_node_manager, "TDMA")
+        taisc_manager = TAISCMACManager(global_node_manager, "TSCH")
 
         # Configure the default callback:
         global_node_manager.set_default_callback(default_callback)
@@ -138,7 +138,7 @@ def main():
         contiki_nodes = global_node_manager.get_mac_address_list()
         print("Connected nodes", [str(node) for node in contiki_nodes])
 
-        ret = taisc_manager.update_slotframe('./ecoap_external_TSCH_advanced/taisc_slotframe.csv')
+        ret = taisc_manager.update_slotframe('/home/carlo/Testbed/wishful/test_ecoap/examples/contiki/ecoap_external_TSCH_advanced/taisc_slotframe.csv', "TSCH")
         log.info(ret)
         ret = taisc_manager.update_macconfiguration({'IEEE802154_macSlotframeSize': len(contiki_nodes)})
         log.info(ret)
