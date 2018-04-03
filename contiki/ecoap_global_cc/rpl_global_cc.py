@@ -16,8 +16,6 @@ class RPLGlobalCC():
 
         self.thread_started = False
 
-        self.ranks = []
-
         self.pp = {}
 
         self.hops_to_root = {}
@@ -44,7 +42,7 @@ class RPLGlobalCC():
             return path
 
         while n != 1 and nh < 20:
-            if self.pp[n] == 0:
+            if n not in self.pp or self.pp[n] == 0:
                 path = []
                 return path
 
@@ -100,11 +98,6 @@ class RPLGlobalCC():
 
     def report(self, mac_address, measurement_report):
         for st in measurement_report:
-            if st == "rpl_rank":
-                rank = int(measurement_report[st][0])
-                #if rank > self.max_rank:
-                    #self.max_rank = rank
-                self.ranks.append(rank)
             if st == "rpl_preferred_parent":
                 p = int(measurement_report[st][0][-1])
                 self.pp[mac_address] = p
