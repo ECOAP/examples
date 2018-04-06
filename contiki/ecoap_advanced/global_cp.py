@@ -41,6 +41,9 @@ import random as rand
 
 from gevent import monkey, sleep
 from contiki.ecoap_global_cc.rpl_global_cc import *
+###
+from contiki.ecoap_global_cc.coapr_global_cc import *
+###
 from measurement_logger import *
 from stdout_measurement_logger import *
 from file_measurement_logger import *
@@ -53,7 +56,9 @@ from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import 
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_rpl_cc import ecoap_local_monitoring_program_rpl_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_cocoa_cc import ecoap_local_monitoring_program_cocoa_cc
-
+###
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_coapr_cc import ecoap_local_monitoring_program_coapr_cc
+###
 
 __author__ = "Carlo Vallati & Francesca Righetti"
 __copyright__ = "Copyright (c) 2018, UNIPI"
@@ -75,14 +80,16 @@ def default_callback(group, node, cmd, data, interface = ""):
     print("{} DEFAULT CALLBACK : Group: {}, NodeName: {}, Cmd: {}, Returns: {}, interface: {}".format(datetime.datetime.now(), group, node.name, cmd, data, interface))
 
 def handle_event(mac_address, event_name, event_value):
-    print("%s @ %s: %s"%(str(mac_address), event_name, str(event_value)))
     e = (mac_address,) + event_value
 
     measurement_logger.log_measurement(event_name, e)
+    
+    if cc_manager is not None and isinstance(cc_manager, COAPRGlobalCC):
+        if event_name == "capacity": 
+            cc_manager.report_capacity(mac_address, event_value[0])
 
 def handle_measurement(mac_address, measurement_report):
     for st in measurement_report:
-        print("%s @ %s "%(str(mac_address), str(st)))
         if len(measurement_report[st]) > 0:
             m = (mac_address,) + (measurement_report[st][0],)
             measurement_logger.log_measurement(str(st), m )
@@ -142,6 +149,11 @@ def main():
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+        elif cc_policy == "coapr":
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_coapr_cc)
+            cc_manager = COAPRGlobalCC(add_message)
+            print("Mac address list %s"%str(global_node_manager.get_mac_address_list()))
+            cc_manager.set_num_nodes(len(global_node_manager.get_mac_address_list()))
         # elif cc_policy == "default":
         else:
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)
@@ -194,7 +206,11 @@ def main():
         while True:
             while message_queue:
                 mess = message_queue.pop(0)
-                global_node_manager.send_downstream(mess)
+                if 'interface' in mess:
+                    iface = mess['interface']
+                    global_node_manager.send_downstream(mess, [iface])
+                else:
+                    global_node_manager.send_downstream(mess)
             gevent.sleep(10)
 
             

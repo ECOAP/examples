@@ -66,6 +66,7 @@ class GlobalNodeManager(NodeManager):
             if mac_address not in self.mac_address_to_local_monitoring_cp:
                 node_id = self.mac_address_to_node_id[mac_address]
                 iface = self.mac_address_to_interface[mac_address]
+                #print("Node with mac address %s uses interface %s"%(str(mac_address),str(iface)))
                 self.mac_address_to_event_cb[mac_address] = None
                 self.mac_address_to_report_cb[mac_address] = None
                 if self.local_control == None:
@@ -122,12 +123,10 @@ class GlobalNodeManager(NodeManager):
             mac_address_list = self.mac_address_list
         for mac_address in mac_address_list:
             #msg['interface'] = [self.mac_address_to_interface[mac_address]]
-            print("SEND DOWNSTREAM")
-            print(str(msg))
-            print(str(mac_address))
+            print("[DS] %s: %s"%(str(mac_address),str(msg)))
+            #print(str(msg))
+            #print(str())
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
-
-
 
     def __update_mac_address_list(self, node_id):
         gevent.sleep(2)
