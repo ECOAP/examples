@@ -17,10 +17,10 @@ class AppManager(object):
         self.log = logging.getLogger("local_app_manager")
 
     def add_route(self,dest_ipv6_addr, num_hops, nexthop_ipv6_addr, mac_address):
-        return self.node_manager.execute_upi_function("net", "ipv6_route_add", [mac_address], dest_ipv6_addr, num_hops, nexthop_ipv6_addr )
+        return self.node_manager.execute_upi_function("net", "add_route", [mac_address], dest_ipv6_addr, num_hops, nexthop_ipv6_addr )
 
     def add_neighbor(self,neighbor_ipv6_addr, neighbor_mac_addr, is_router, mac_address):
-        return self.node_manager.execute_upi_function("net", "nd6_add_neighbor", [mac_address], neighbor_ipv6_addr, neighbor_mac_addr, is_router )
+        return self.node_manager.execute_upi_function("net", "add_neighbor", [mac_address], neighbor_ipv6_addr, neighbor_mac_addr, is_router )
 
     def rpl_set_border_router(self, prefix_array, mac_address):
         """Sets the rpl border router.
