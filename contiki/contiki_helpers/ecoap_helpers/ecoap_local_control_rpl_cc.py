@@ -13,9 +13,9 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
     import random as rnd
     import _thread
 
-    max_rank = 127
-    my_rank = 127
-    rto_prev = 0
+    current_rto_min = 2000
+    current_rto_max = 3000
+    current_factor = 1.5
 
     def event(interface, event_name, info):
 
@@ -27,14 +27,19 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
         if event_name == "coap_tx_failed":
             tx_failed(interface, info)
 
-    def new_max_rank(updated_max_rank):
-        nonlocal max_rank
-        max_rank = updated_max_rank
+    def new_rto(rto_set):
+        nonlocal current_rto_min
+        nonlocal current_rto_max
+        nonlocal  current_factor
 
-    def update_rank(new_rank):
-        nonlocal my_rank
+        print(rto_set)
+        r = eval(rto_set)
 
-        my_rank = new_rank
+        current_rto_min = int(r[0])
+        current_rto_max = int(r[1])
+        current_factor = int(r[2])
+
+
 
     def send_rto(interface,rto):
         control_engine.blocking(True).net.iface(interface).set_parameters_net({'coap_rto': rto})
@@ -46,46 +51,31 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
     def tx_success(interface, info):
 
-        nonlocal my_rank, max_rank, rto_prev
+        nonlocal current_rto_min
+        nonlocal current_rto_max
+        nonlocal  current_factor
 
-        rtt = int(info[1])
+        interval1 = rnd.randint(current_rto_min, current_rto_max)
+        interval2  = rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor))
+        interval3 = rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor))
+        interval4 = rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor))
 
-        if rto_prev == 0 :
-            rto_prev = rtt
-
-        # RPL CC policy
-
-        a = float(my_rank / max_rank)
-        if a > 1.0:
-            a = 1.0
-
-        interval = int((1-a) * rtt + a * rto_prev)
-
-        rto = (interval, interval * 2, interval * 4, interval * 8)
-
-        rto_prev = interval
+        rto = (interval1, interval2, interval3, interval4)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
     def tx_failed(interface, info):
 
-        nonlocal my_rank, max_rank, rto_prev
+        nonlocal current_rto_min
+        nonlocal current_rto_max
+        nonlocal  current_factor
 
-        rtt = int(info[1])
 
-        if rto_prev == 0 :
-            rto_prev = rtt
-
-        # RPL CC policy
-
-        a = float(my_rank / max_rank)
-        if a > 1.0:
-            a = 1.0
-        interval = int((1-a) * rtt + a * rto_prev)
-
-        rto = (interval, interval * 2, interval * 4, interval * 8)
-
-        rto_prev = interval
+        interval1 = rnd.randint(current_rto_min, current_rto_max)
+        interval2  = rnd.randint(int(current_rto_min * current_factor), int(current_rto_max * current_factor))
+        interval3 = rnd.randint(int(current_rto_min * current_factor * current_factor), int(current_rto_max * current_factor * current_factor))
+        interval4 = rnd.randint(int(current_rto_min * current_factor * current_factor * current_factor), int(current_rto_max * current_factor * current_factor * current_factor))
+        rto = (interval1, interval2, interval3, interval4)
 
         _thread.start_new_thread(send_rto, (interface, rto,))
 
@@ -104,10 +94,6 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
 
     def report_callback(interface, report):
         control_engine.send_upstream({"msg_type": "report", "interface": interface, "report": report})
-
-        for st in report:
-            if st == "rpl_rank":
-                update_rank(int(report[st][0]))
 
         pass
 
@@ -141,8 +127,8 @@ def ecoap_local_monitoring_program_rpl_cc(control_engine):
                 print("local monitoring unknown command {}".format(msg['command']))
 
         elif msg is not None and type(msg) is dict and 'info' in msg:
-            if msg['info'] == 'rpl':
-                new_max_rank(int(msg['max_rank']))
+            if msg['info'] == 'RTO':
+                new_rto(msg['RTO'])
 
         elif msg is not None and type(msg) is dict:
             print("local monitoring unknown msg type {}".format(msg))

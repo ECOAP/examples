@@ -16,6 +16,12 @@ class AppManager(object):
         self.node_manager = node_manager
         self.log = logging.getLogger("local_app_manager")
 
+    def add_route(self,dest_ipv6_addr, num_hops, nexthop_ipv6_addr, mac_address):
+        return self.node_manager.execute_upi_function("net", "add_route", [mac_address], dest_ipv6_addr, num_hops, nexthop_ipv6_addr )
+
+    def add_neighbor(self,neighbor_ipv6_addr, neighbor_mac_addr, is_router, mac_address):
+        return self.node_manager.execute_upi_function("net", "add_neighbor", [mac_address], neighbor_ipv6_addr, neighbor_mac_addr, is_router )
+
     def rpl_set_border_router(self, prefix_array, mac_address):
         """Sets the rpl border router.
         This function takes the ipv6 prefix of the border router
@@ -125,3 +131,22 @@ class AppManager(object):
             return self.node_manager.execute_upi_function("net", "subscribe_events_net", event_key_list, event_callback, event_duration, mac_address_list)
         else:
             return self.node_manager.subscribe_events("net", event_key_list, event_callback, event_duration, mac_address_list)
+
+
+    def subscribe_events_interface(self, event_key_list, event_callback, event_duration, interface, mac_address_list=None):
+        """Monitor the MAC behaviour asynchroniously in a push based manner by registering for events.
+        This function takes a list of event keys and an event callback as arguements.
+        This function returns an error code.
+
+        Args:
+            event_keys (List[str]): a list of event keys
+            event_callback (Callable[[str,str,Any],None]): Callback with arguments radio_platform, event name and event value.
+            radio_platforms (List[str], optional): list of radio platforms
+
+        Returns:
+            int: error code (0 = success, -1 = fail, >=1 errno value)
+        """
+        if self.node_manager.scope == "local":
+            return self.node_manager.execute_upi_function("net", "subscribe_events_net", event_key_list, event_callback, event_duration, mac_address_list)
+        else:
+            return self.node_manager.subscribe_events_interface("net", event_key_list, event_callback, event_duration, interface,  mac_address_list)

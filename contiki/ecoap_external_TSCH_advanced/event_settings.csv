@@ -2,8 +2,6 @@
 1,coap_rx_success
 1,coap_tx_failed
 0,burst_overflow_event
-1,burst_end_event
-1,burst_start_event
 0,ping_result
 0,IEEE802154_event_macStats
 0,tsch_stats

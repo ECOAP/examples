@@ -110,6 +110,15 @@ class GlobalNodeManager(NodeManager):
             msg = {'interface': [self.mac_address_to_interface[mac_address]], 'command': 'SUBSCRIBE_EVENT', 'upi_type': upi_type, 'event_key_list': event_key_list, 'event_duration': event_duration}
             self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
 
+    def subscribe_events_interface(self, upi_type, event_key_list, event_callback, event_duration, interface, mac_address_list=None):
+        if mac_address_list is None:
+            mac_address_list = self.mac_address_list
+        for mac_address in mac_address_list:
+            self.mac_address_to_event_cb[mac_address] = event_callback
+            msg = {'interface': [interface], 'command': 'SUBSCRIBE_EVENT',
+                   'upi_type': upi_type, 'event_key_list': event_key_list, 'event_duration': event_duration}
+            self.mac_address_to_local_monitoring_cp[mac_address].send(msg)
+
     def get_measurements_periodic(self, upi_type, measurement_key_list, collect_period, report_period, num_iterations, report_callback, mac_address_list=None):
         if mac_address_list is None:
             mac_address_list = self.mac_address_list

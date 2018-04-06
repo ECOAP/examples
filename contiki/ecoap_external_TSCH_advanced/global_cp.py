@@ -127,13 +127,23 @@ def main():
         # Setup the sensor node helpers:
         global_node_manager = GlobalNodeManager(config)
         app_manager = AppManager(global_node_manager)
-        taisc_manager = TAISCMACManager(global_node_manager, "CSMA")
+        taisc_manager = TAISCMACManager(global_node_manager, "TSCH")
 
         # Configure the default callback:
         global_node_manager.set_default_callback(default_callback)
 
         # Wait for the agents to connect to the global controller:
         global_node_manager.wait_for_agents(node_config['ip_address_list'])
+
+        contiki_nodes = global_node_manager.get_mac_address_list()
+        print("Connected nodes", [str(node) for node in contiki_nodes])
+
+        ret = taisc_manager.update_slotframe('/home/carlo/Testbed/wishful/test_ecoap/examples/contiki/ecoap_external_TSCH_advanced/taisc_slotframe.csv', "TSCH")
+        log.info(ret)
+        ret = taisc_manager.update_macconfiguration({'IEEE802154_macSlotframeSize': len(contiki_nodes)})
+        log.info(ret)
+        ret = taisc_manager.update_macconfiguration({'IEEE802154e_macSlotframeSize': len(contiki_nodes)})
+        log.info(ret)
 
         # Configure the first sensor node as border router and start the local monitoring control programs:
         border_router_id = 1
@@ -142,7 +152,7 @@ def main():
 
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
-            cc_manager = RPLGlobalCC(add_message, len(global_node_manager.get_mac_address_list()))
+            cc_manager = RPLGlobalCC(add_message)
         elif cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
@@ -184,9 +194,9 @@ def main():
         taisc_manager.get_measurements_periodic(measurement_logger.measurement_definitions, 60, 60, 100000, handle_measurement)  # TODO experiment duration
 
         # Set routing operations (it sould be done on the root node, here we assume that the agent of the root runs on the same host of the controller)
-        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0", shell=True,
+            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1", shell=True,
                                     universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:
@@ -204,10 +214,6 @@ def main():
 
         global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.create_packetflow_sink(port=5683)
 
-        #global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.subscribe_events_net('coap_message_rx', event_cb, 0)
-
-        #app_manager.subscribe_events_interface(['coap_block_rx'], event_cb, 'lo', global_node_manager.mac_address_to_node_id[1] )
-
         #gevent.sleep(2)
 
         #global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_periodic_net(["app_stats"], 60, 60, 100000)
@@ -222,18 +228,13 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-            #global global_node_manager
-            #ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
-            #print(str(ret))
+      #      global global_node_manager
+        #     ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
+         #   print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
-                if type(mess) is dict:
-                    # Message to all
-                    global_node_manager.send_downstream(mess)
-                else:
-                    if mess[0] in global_node_manager.get_mac_address_list():
-                        global_node_manager.send_downstream(mess[1],[mess[0]])
-            gevent.sleep(5)
+                global_node_manager.send_downstream(mess)
+            gevent.sleep(10)
 
 
     except KeyboardInterrupt:
@@ -241,9 +242,9 @@ def main():
         global_node_manager.stop()
         log.debug("Controller exits")
 
-        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0", shell=True,
+            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1", shell=True,
                             universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -D INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:

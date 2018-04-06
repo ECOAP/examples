@@ -26,6 +26,7 @@ Other options:
    -v, --verbose       print more text
    --version           show version and exit
 """
+import ipaddress
 import logging
 import yaml
 import gevent
@@ -136,9 +137,25 @@ def main():
         global_node_manager.wait_for_agents(node_config['ip_address_list'])
 
         # Configure the first sensor node as border router and start the local monitoring control programs:
-        border_router_id = 1
-        print("Set node %d as border router" % (border_router_id))
-        app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], border_router_id)
+        #border_router_id = 1
+        #print("Set node %d as border router" % (border_router_id))
+        #app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], border_router_id)
+        #app_manager.add_route([0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000], [1], [0xfd00, 0x0000, 0x0000, 0x0000, 0xfdff, 0xffff, 0xffff, 0x0001], 2 )
+        #app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xfdff, 0xffff, 0xffff, 0x0001], [0xfd, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x01] , [1], 2)
+        #app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xfdff, 0xffff, 0xffff, 0x0003], [0xfd, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x03], [1], 2)
+
+        app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0001], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x01] , [1], 2)
+        #app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x03] , [1], 2)
+        app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001], [1], [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0001], 2)
+
+        app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x02], [1], 1)
+        #app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], [1], [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 1 )
+
+        #app_manager.add_neighbor([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x02], [1], 3)
+        #app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0001], [1], [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 3 )
+
+
+
 
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
@@ -184,9 +201,9 @@ def main():
         taisc_manager.get_measurements_periodic(measurement_logger.measurement_definitions, 60, 60, 100000, handle_measurement)  # TODO experiment duration
 
         # Set routing operations (it sould be done on the root node, here we assume that the agent of the root runs on the same host of the controller)
-        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun0", shell=True,
+            subprocess.check_output("sudo ip -6 addr add fd00::1/8 dev tun1", shell=True,
                                     universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -C INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:
@@ -241,9 +258,9 @@ def main():
         global_node_manager.stop()
         log.debug("Controller exits")
 
-        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0 2> /dev/null; echo $?", shell=True,
+        if int(subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1 2> /dev/null; echo $?", shell=True,
                                        universal_newlines=True).strip()) > 0:
-            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun0", shell=True,
+            subprocess.check_output("sudo ip -6 addr del fd00::1/8 dev tun1", shell=True,
                             universal_newlines=True).strip()
         if int(subprocess.check_output("sudo ip6tables -D INPUT -d fd00::/8 -j ACCEPT 2> /dev/null; echo $?",
                                        shell=True, universal_newlines=True).strip()) > 0:
