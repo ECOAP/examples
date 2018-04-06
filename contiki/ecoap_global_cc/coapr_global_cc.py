@@ -46,8 +46,8 @@ class COAPRGlobalCC():
         return children
     
     def send_rate_allocation(self, value, interface):
-        msg = {'info': 'allocation', 'interface': interface, 'rate_allocation': value}
-        self.send(msg)
+        msg = {'info': 'allocation',  'rate_allocation': value}
+        self.send((interface,msg))
         pass
     
     def compute_allocation(self, elem):
