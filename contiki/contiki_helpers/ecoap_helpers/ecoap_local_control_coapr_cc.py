@@ -74,7 +74,7 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
             
             if packet_service_time != 0:
                 #throughput expressed in b/s
-                instantaneous_throughput = 35/packet_service_time*1000000000
+                instantaneous_throughput = 35/(packet_service_time/1000)
                 long_term_forecast = alpha_A*instantaneous_throughput + (1-alpha_A)*long_term_forecast
                 
                 #to remove the fluctuations on the average link capacity use a weighted moving-average
