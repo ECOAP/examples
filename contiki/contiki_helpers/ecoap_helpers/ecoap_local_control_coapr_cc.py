@@ -1,8 +1,3 @@
-__author__ = "Carlo Vallati"
-__copyright__ = "Copyright (c) 2018, University of Pisa, Italy"
-__version__ = "0.1.0"
-
-# Definition of Local Control Program that is in place for monitoring and controlling CoAP Congestion Control.
 
 
 def ecoap_local_monitoring_program_coapr_cc(control_engine):
@@ -39,17 +34,19 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
     def new_rate_allocation(rate_allocation, interface):       
         nonlocal omega, eta, sending_rate
         
+        print("\n")
         print("%s: allocatable_rate=%s"%(str(interface), str(rate_allocation)))
         
+        #the rate is changed according to its history
         delta = sending_rate - rate_allocation
         print("%s: delta=%s (%s-%s)"%(str(interface),str(delta),str(sending_rate),str(rate_allocation)))
-        #rate_allocation can be temporarily zero for cycles in the dogag
+        #rate_allocation can be temporarily zero for cycles in the DOGAG
         if rate_allocation!=0 and sending_rate/rate_allocation > omega:
             sending_rate = sending_rate - abs(delta)/eta
         elif rate_allocation!=0 and sending_rate/rate_allocation <= omega:
             sending_rate = sending_rate + abs(delta)/eta    
         
-        print("%s: sending_rate=%s"%(str(interface), str(sending_rate)))
+        print("%s: sending_rate=%s"%(str(interface), str(int(sending_rate))))
         
         #################TODO: change sending rate#######################################
         #control_engine.blocking(True).net.iface(interface).set_parameters_net({'rate': sending_rate})
@@ -57,7 +54,7 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
     def update_service_time(interface, time):
         nonlocal packet_service_time
 
-        print("%s: service time=%s"%(str(interface), str(time)))
+        print("%s: service_time=%s"%(str(interface), str(time)))
         packet_service_time = time
 
     def send_rto(interface,rto):
@@ -65,7 +62,6 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
 
         # Send back to the controller the rto for statistical purposes
         control_engine.send_upstream( {"msg_type": "event", "interface": interface, "event_name": 'coap_rto', "event_value": rto})
-
         pass
     
     def send_capacity(interface):
@@ -74,28 +70,30 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         print("%s thread 'send_capacity' started"%str(interface))
         
         while True:
-            gevent.sleep(60)
+            gevent.sleep(30)
             
             if packet_service_time != 0:
                 #throughput expressed in b/s
-                instantaneous_throughput = 1/packet_service_time*1000
+                instantaneous_throughput = 35/packet_service_time*1000000000
                 long_term_forecast = alpha_A*instantaneous_throughput + (1-alpha_A)*long_term_forecast
                 
+                #to remove the fluctuations on the average link capacity use a weighted moving-average
                 if instantaneous_throughput >= long_term_forecast:
                     alpha_W = alpha_A
                 else:
                     alpha_W = beta * alpha_A
                 
                 maximum_capacity = alpha_W*instantaneous_throughput+(1-alpha_W)*maximum_capacity
-                maximum_capacity_t = tuple([maximum_capacity])
+                maximum_capacity_t = tuple([int(maximum_capacity)])
                 
+                #the first time you need to initialize the sending_rate with the already computed value
                 if sending_rate == 0:
-                    sending_rate = maximum_capacity
-                       
+                    sending_rate = int(maximum_capacity)
+                
+                #send the computed average sending rate to the global controller       
                 msg = {"msg_type": "event", "interface": interface, "event_name": 'capacity', "event_value": maximum_capacity_t}
                 print("[US] %s: capacity %s"%(str(interface),str(msg)))
                 control_engine.send_upstream(msg)
-
         pass
 
     def tx_success(interface, info):
@@ -133,7 +131,6 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         if thread_started is False:
             _thread.start_new_thread(send_capacity, (interface,))
             thread_started = True
-            print("%s: thread started"%str(interface))
                 
         for st in report:
             if st == "IEEE802154_measurement_macStats":
@@ -173,11 +170,15 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         #MESSAGE FROM THE GLOBAL CONTROLLER
         elif msg is not None and type(msg) is dict and 'info' in msg:
             if msg['info'] == 'allocation':
-                new_rate_allocation(msg['rate_allocation'], msg['interface'])
+                new_rate_allocation(msg['rate_allocation'], control_engine.id)
 
         elif msg is not None and type(msg) is dict:
             print("local monitoring unknown msg type {}".format(msg))
 
+
+
         gevent.sleep(1)
 
     print(("local monitor cp  - Name: {}, Id: {} - STOPPED".format(control_engine.name, control_engine.id)))
+
+

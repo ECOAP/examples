@@ -204,14 +204,18 @@ def main():
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
+            #global global_node_manager
+            #ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
+            #print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
-                if 'interface' in mess:
-                    iface = mess['interface']
-                    global_node_manager.send_downstream(mess, [iface])
-                else:
+                if type(mess) is dict:
+                    # Message to all
                     global_node_manager.send_downstream(mess)
-            gevent.sleep(10)
+                else:
+                    if mess[0] in global_node_manager.get_mac_address_list():
+                        global_node_manager.send_downstream(mess[1],[mess[0]])
+            gevent.sleep(5)
 
             
     except KeyboardInterrupt:

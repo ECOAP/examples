@@ -16,6 +16,7 @@ Options:
    --param_config_file Parameter configuration file (csv)
    --event_config_file Events configuration file (csv)
    --congestion_policy Congestion policy
+   --topology_file Topology file for static routing
 
 Example:
    python global_cp.py --config config/localhost/global_cp_config.yaml
@@ -67,6 +68,7 @@ log = logging.getLogger('contiki_global_control_program')
 
 param_config_file = None
 cc_manager = None
+topology_file = None
 
 message_queue = []
 
@@ -161,7 +163,8 @@ def main():
 
         routing_manager = RoutingManager(app_manager, [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00])
 
-        routing_manager.load_routes_from_file('/home/carlo/Testbed/wishful/ecoap/wishful/examples/contiki/ecoap_external_static_advanced/test_routing.txt')
+        if topology_file is not None:
+            routing_manager.load_routes_from_file(topology_file)
 
         routing_manager.apply_def_route()
         routing_manager.apply_reverse_route()
@@ -286,7 +289,7 @@ def main():
 def load_config(args):
     global config, node_config, \
         param_config_file, event_config_file, \
-        measurement_logger, cc_policy
+        measurement_logger, cc_policy, topology_file
 
     # a) Verbosity:
     log_level = logging.INFO  # default
@@ -340,6 +343,9 @@ def load_config(args):
 
     if args['--congestion_policy'] is not None:
         cc_policy = args['--congestion_policy']
+
+    if args['--topology_file'] is not None:
+        topology_file = args['--topology_file']
 
     return
 
