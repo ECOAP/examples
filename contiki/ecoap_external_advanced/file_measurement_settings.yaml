@@ -15,3 +15,5 @@ measurement_config:
             coap_rto: "rto0:int rto1:int rto2:int rto3:int"
             IEEE802154_measurement_macStats: "timeDiff:uint32 numTxRequest:uint32 numTxRequestFail:uint32 numTxAttempt:uint32 numTxSuccess:uint32 numTxFail:uint32 numTxBusy:uint32 numTxNoAck:uint32 numTxCollision:uint32 numTxNTFull:uint32 numRx:uint32 numBackoffs:uint16 report_id:uint16"
             capacity: "capacity:int"
+            burst_start_event: "burstid:uint32 timestamp:uint32"
+            burst_end_event: "burstid:uint32 timestamp:uint32 duration:uint32"

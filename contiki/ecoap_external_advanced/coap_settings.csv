@@ -1,4 +1,5 @@
-app,app_payload_length,95
+app,app_payload_length,34
 app,app_send_interval,10000
-app,app_msg_in_burst,2
-app,app_burst_interval,60
+app,app_msg_in_burst,40
+app,app_burst_interval,120
+app,coap_max_rate,0

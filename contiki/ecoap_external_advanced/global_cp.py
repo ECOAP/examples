@@ -158,6 +158,7 @@ def main():
             cc_manager = COAPRGlobalCC(add_message)
             print("Mac address list %s"%str(global_node_manager.get_mac_address_list()))
             cc_manager.set_num_nodes(len(global_node_manager.get_mac_address_list()))
+            cc_manager.set_interface_list(global_node_manager.mac_address_to_interface)
         # elif cc_policy == "default":
         else:
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)

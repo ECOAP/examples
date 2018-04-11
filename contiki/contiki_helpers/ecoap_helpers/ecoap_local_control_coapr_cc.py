@@ -31,7 +31,7 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         if event_name == "coap_tx_failed":
             tx_failed(interface, info)
 
-    def new_rate_allocation(rate_allocation, interface):       
+    def new_rate_allocation(rate_allocation, interface, inter):
         nonlocal omega, eta, sending_rate
         
         print("\n")
@@ -48,8 +48,7 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         
         print("%s: sending_rate=%s"%(str(interface), str(int(sending_rate))))
         
-        #################TODO: change sending rate#######################################
-        #control_engine.blocking(True).net.iface(interface).set_parameters_net({'rate': sending_rate})
+        control_engine.blocking(True).net.iface(inter).set_parameters_net({'coap_max_rate': int(sending_rate)})
         
     def update_service_time(interface, time):
         nonlocal packet_service_time
@@ -170,7 +169,17 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         #MESSAGE FROM THE GLOBAL CONTROLLER
         elif msg is not None and type(msg) is dict and 'info' in msg:
             if msg['info'] == 'allocation':
-                new_rate_allocation(msg['rate_allocation'], control_engine.id)
+
+                print(str(msg))
+
+                if 'interface' in msg:
+                    inter = msg['interface']
+                else:
+                    inter = 'lowpan0'
+
+                #new_rate_allocation(msg['rate_allocation'], control_engine.id, inter)
+
+                _thread.start_new_thread(new_rate_allocation, (msg['rate_allocation'], control_engine.id, inter,))
 
         elif msg is not None and type(msg) is dict:
             print("local monitoring unknown msg type {}".format(msg))

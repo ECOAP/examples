@@ -21,7 +21,10 @@ class COAPRGlobalCC():
         
         for i in range(1, num+1):
             self.tree.append(TreeElement(i))
-        
+
+    def set_interface_list(self, mac_to_inter):
+        self.mac_to_inter = mac_to_inter
+
     def print_tree(self):
         print("\n")
         for i in range(len(self.tree)):
@@ -29,7 +32,7 @@ class COAPRGlobalCC():
         print("\n")
     
     def send_rate_allocation(self, value, interface):
-        msg = {'info': 'allocation',  'rate_allocation': value}
+        msg = {'info': 'allocation',  'rate_allocation': value, 'interface': self.mac_to_inter[interface] }
         self.send((interface,msg))
         pass
             
