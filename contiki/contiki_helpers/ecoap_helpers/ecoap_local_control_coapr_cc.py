@@ -8,7 +8,7 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
     import random as rnd
     import _thread
 
-    packet_service_time = 0
+    packet_service_time = -1
     alpha_A = 0.01
     beta = 1.2
     long_term_forecast = 0
@@ -35,15 +35,17 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         nonlocal omega, eta, sending_rate
         
         print("\n")
+        print("%s: sending_rate=%s"%(str(interface), str(sending_rate)))
         print("%s: allocatable_rate=%s"%(str(interface), str(rate_allocation)))
         
         #the rate is changed according to its history
         delta = sending_rate - rate_allocation
         print("%s: delta=%s (%s-%s)"%(str(interface),str(delta),str(sending_rate),str(rate_allocation)))
         #rate_allocation can be temporarily zero for cycles in the DOGAG
-        if rate_allocation!=0 and sending_rate/rate_allocation > omega:
-            sending_rate = sending_rate - abs(delta)/eta
-        elif rate_allocation!=0 and sending_rate/rate_allocation <= omega:
+        if sending_rate > rate_allocation:
+            if rate_allocation!=0 and sending_rate/rate_allocation > omega:
+                sending_rate = sending_rate - abs(delta)/eta
+        else: #sending rate < rate_allocation
             sending_rate = sending_rate + abs(delta)/eta    
         
         print("%s: sending_rate=%s"%(str(interface), str(int(sending_rate))))
@@ -71,10 +73,17 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
         while True:
             gevent.sleep(30)
             
-            if packet_service_time != 0:
+            if packet_service_time != -1:
                 #throughput expressed in b/s
-                instantaneous_throughput = 35/(packet_service_time/1000)
+                print("\n")
+                print("%s: packet_service_time=%s"%(str(interface), str(packet_service_time)))
+                if packet_service_time != 0:
+                    instantaneous_throughput = 35/(packet_service_time/1000)
+                else:
+                    instantaneous_throughput = 35/(0.5/1000)
+                print("%s: instantaneous_throughput=%s"%(str(interface), str(instantaneous_throughput)))
                 long_term_forecast = alpha_A*instantaneous_throughput + (1-alpha_A)*long_term_forecast
+                print("%s: long_term_forecast=%s"%(str(interface), str(long_term_forecast)))
                 
                 #to remove the fluctuations on the average link capacity use a weighted moving-average
                 if instantaneous_throughput >= long_term_forecast:
@@ -84,10 +93,12 @@ def ecoap_local_monitoring_program_coapr_cc(control_engine):
                 
                 maximum_capacity = alpha_W*instantaneous_throughput+(1-alpha_W)*maximum_capacity
                 maximum_capacity_t = tuple([int(maximum_capacity)])
+                print("%s: alpha_W=%s; capacity=%s"%(str(interface), str(alpha_W), str(maximum_capacity)))
                 
                 #the first time you need to initialize the sending_rate with the already computed value
                 if sending_rate == 0:
                     sending_rate = int(maximum_capacity)
+                print("Sending rate %s"%str(sending_rate))
                 
                 #send the computed average sending rate to the global controller       
                 msg = {"msg_type": "event", "interface": interface, "event_name": 'capacity', "event_value": maximum_capacity_t}
