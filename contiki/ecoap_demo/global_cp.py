@@ -16,6 +16,7 @@ Options:
    --param_config_file Parameter configuration file (csv)
    --event_config_file Events configuration file (csv)
    --congestion_policy Congestion policy
+   --topology_file Topology file for static routing
 
 Example:
    python global_cp.py --config config/localhost/global_cp_config.yaml
@@ -26,6 +27,7 @@ Other options:
    -v, --verbose       print more text
    --version           show version and exit
 """
+import ipaddress
 import logging
 import yaml
 import gevent
@@ -51,6 +53,7 @@ from mysql_measurement_logger import *
 from contiki.contiki_helpers.global_node_manager import *
 from contiki.contiki_helpers.taisc_manager import *
 from contiki.contiki_helpers.app_manager import *
+from contiki.contiki_helpers.routing_manager import *
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import ecoap_local_monitoring_program_simple_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_rpl_cc import ecoap_local_monitoring_program_rpl_cc
@@ -65,6 +68,7 @@ log = logging.getLogger('contiki_global_control_program')
 
 param_config_file = None
 cc_manager = None
+topology_file = None
 
 message_queue = []
 
@@ -127,7 +131,8 @@ def main():
         # Setup the sensor node helpers:
         global_node_manager = GlobalNodeManager(config)
         app_manager = AppManager(global_node_manager)
-        taisc_manager = TAISCMACManager(global_node_manager, "TSCH")
+        taisc_manager = TAISCMACManager(global_node_manager, "CSMA")
+
 
         # Configure the default callback:
         global_node_manager.set_default_callback(default_callback)
@@ -135,24 +140,33 @@ def main():
         # Wait for the agents to connect to the global controller:
         global_node_manager.wait_for_agents(node_config['ip_address_list'])
 
-        contiki_nodes = global_node_manager.get_mac_address_list()
-        print("Connected nodes", [str(node) for node in contiki_nodes])
-
-        ret = taisc_manager.update_slotframe('/home/carlo/Testbed/wishful/ecoap/wishful/examples/contiki/ecoap_external_TSCH_advanced/taisc_slotframe.csv', "TSCH")
-        log.info(ret)
-        ret = taisc_manager.update_macconfiguration({'IEEE802154_macSlotframeSize': len(contiki_nodes)})
-        log.info(ret)
-        ret = taisc_manager.update_macconfiguration({'IEEE802154e_macSlotframeSize': len(contiki_nodes)})
-        log.info(ret)
-
         # Configure the first sensor node as border router and start the local monitoring control programs:
         border_router_id = 1
         print("Set node %d as border router" % (border_router_id))
         app_manager.rpl_set_border_router([0xfd, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00], border_router_id)
 
+
+        # WORKING TEST
+        #app_manager.add_neighbor([0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x02], [1], 1)
+        #app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], [128], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 1 )
+        #app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], [128], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 1)
+
+        #app_manager.add_neighbor([0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x03], [1], 2)
+        #app_manager.add_route([0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], [128], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0003], 2)
+        #app_manager.add_neighbor([0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0001], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x01] , [1], 2)
+        #app_manager.add_route([0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000], [1], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0001], 2 )
+
+
+        #app_manager.add_neighbor([0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x02], [1], 3)
+        #app_manager.add_route([0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000], [1], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 3 )
+
+
+        routing_manager = RoutingManager(app_manager, [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00])
+
+
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
-            cc_manager = RPLGlobalCC(add_message)
+            cc_manager = RPLGlobalCC(add_message, len(global_node_manager.get_mac_address_list()))
         elif cc_policy == "cocoa":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
@@ -214,6 +228,10 @@ def main():
 
         global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.create_packetflow_sink(port=5683)
 
+        #global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[1]]).iface('lo').net.subscribe_events_net('coap_message_rx', event_cb, 0)
+
+        #app_manager.subscribe_events_interface(['coap_block_rx'], event_cb, 'lo', global_node_manager.mac_address_to_node_id[1] )
+
         #gevent.sleep(2)
 
         #global_node_manager.control_engine.delay(1).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_periodic_net(["app_stats"], 60, 60, 100000)
@@ -225,16 +243,40 @@ def main():
             app_manager.update_configuration({"app_activate": 2}, i)
             gevent.sleep(rand.uniform(0.1, 5))
 
+        exp_time = 0
 
         # Run the experiment until keyboard interrupt is triggered:
         while True:
-      #      global global_node_manager
-        #     ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
-         #   print(str(ret))
+
+            if exp_time == 5:
+
+                print("Expired reset")
+
+                # Stop RPL
+
+                # Empty routing table
+                routing_manager.clear_tables()
+
+                if topology_file is not None:
+                    routing_manager.load_routes_from_file(topology_file)
+
+                routing_manager.apply_def_route()
+                routing_manager.apply_reverse_route()
+
+            #global global_node_manager
+            #ret = global_node_manager.control_engine.blocking(True).node(global_node_manager.connected_nodes[global_node_manager.mac_address_to_node_id[16]]).iface('lo').net.get_measurements_net(['app_stats'])
+            #print(str(ret))
             while message_queue:
                 mess = message_queue.pop(0)
-                global_node_manager.send_downstream(mess)
-            gevent.sleep(10)
+                if type(mess) is dict:
+                    # Message to all
+                    global_node_manager.send_downstream(mess)
+                else:
+                    if mess[0] in global_node_manager.get_mac_address_list():
+                        global_node_manager.send_downstream(mess[1],[mess[0]])
+            gevent.sleep(5)
+
+            exp_time = exp_time + 5
 
 
     except KeyboardInterrupt:
@@ -260,7 +302,7 @@ def main():
 def load_config(args):
     global config, node_config, \
         param_config_file, event_config_file, \
-        measurement_logger, cc_policy
+        measurement_logger, cc_policy, topology_file
 
     # a) Verbosity:
     log_level = logging.INFO  # default
@@ -314,6 +356,9 @@ def load_config(args):
 
     if args['--congestion_policy'] is not None:
         cc_policy = args['--congestion_policy']
+
+    if args['--topology_file'] is not None:
+        topology_file = args['--topology_file']
 
     return
 

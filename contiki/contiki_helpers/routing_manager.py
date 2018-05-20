@@ -77,3 +77,6 @@ class RoutingManager(object):
                 self.app_manager.add_route(global_addr, [128], addr, cur)
                 cur = n
 
+    def clear_tables(self):
+        self.app_manager.clear_table()
+
