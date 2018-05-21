@@ -253,6 +253,7 @@ def main():
                 print("Expired reset")
 
                 # Stop RPL
+                app_manager.update_configuration({'rpl_enabled': int('0')})
 
                 # Empty routing table
                 routing_manager.clear_tables()
