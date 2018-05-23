@@ -163,6 +163,9 @@ def main():
 
         routing_manager = RoutingManager(app_manager, [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00])
 
+        if topology_file is not None:
+            routing_manager.load_routes_from_file(topology_file)
+
 
         if cc_policy == "rpl":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_rpl_cc)
@@ -248,7 +251,7 @@ def main():
         # Run the experiment until keyboard interrupt is triggered:
         while True:
 
-            if exp_time == 5:
+            if exp_time == 60:
 
                 print("Expired reset")
 
@@ -257,9 +260,6 @@ def main():
 
                 # Empty routing table
                 routing_manager.clear_tables()
-
-                if topology_file is not None:
-                    routing_manager.load_routes_from_file(topology_file)
 
                 routing_manager.apply_def_route()
                 routing_manager.apply_reverse_route()

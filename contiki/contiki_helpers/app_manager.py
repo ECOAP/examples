@@ -23,7 +23,7 @@ class AppManager(object):
         return self.node_manager.execute_upi_function("net", "add_neighbor", [mac_address], neighbor_ipv6_addr, neighbor_mac_addr, is_router )
 
     def clear_table(self, address_list = None):
-        return self.node_manager.execute_upi_function("net", "clear_route_table", address_list )
+        return self.node_manager.execute_upi_function("net", "clear_route_table", address_list)
 
 
     def rpl_set_border_router(self, prefix_array, mac_address):

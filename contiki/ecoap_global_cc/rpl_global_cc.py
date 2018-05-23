@@ -102,13 +102,14 @@ class RPLGlobalCC():
                 p = int(measurement_report[st][0][-1])
                 self.pp[mac_address] = p
                 self.num_updates = self.num_updates + 1
-                if self.num_updates == self.num_nodes:
+                if self.num_updates >= self.num_nodes:
+                    self.num_updates = 0
                     # Trigger computation
 
                     if self.thread_started is False:
                         self.thread_started = True
                         _thread.start_new_thread(self.periodic_send, ())
 
-                    self.num_updates  = 0
+
 
 

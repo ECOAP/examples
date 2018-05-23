@@ -58,6 +58,8 @@ from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_simple_cc import 
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_default_cc import ecoap_local_monitoring_program_default_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_rpl_cc import ecoap_local_monitoring_program_rpl_cc
 from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_cocoa_cc import ecoap_local_monitoring_program_cocoa_cc
+from contiki.contiki_helpers.ecoap_helpers.ecoap_local_control_coapr_cc import ecoap_local_monitoring_program_coapr_cc
+
 
 __author__ = "Carlo Vallati & Francesca Righetti"
 __copyright__ = "Copyright (c) 2018, UNIPI"
@@ -86,6 +88,10 @@ def handle_event(mac_address, event_name, event_value):
     e = (mac_address,) + event_value
 
     measurement_logger.log_measurement(event_name, e)
+
+    if cc_manager is not None and isinstance(cc_manager, COAPRGlobalCC):
+        if event_name == "capacity":
+            cc_manager.report_capacity(mac_address, event_value[0])
 
 
 def handle_measurement(mac_address, measurement_report):
@@ -161,7 +167,8 @@ def main():
         #app_manager.add_route([0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000], [1], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0002], 3 )
 
 
-        routing_manager = RoutingManager(app_manager, [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00])
+        routing_manager = RoutingManager(app_manager, [0xfd00, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xfe80, 0x0000, 0x0000, 0x0000, 0xa9cd, 0x00ff, 0xfe00, 0x0000], [0xab, 0xcd, 0x00, 0xff, 0xfe, 0x00, 0x00, 0x00]) # COOJA
+        #routing_manager = RoutingManager(app_manager, [0xfd00, 0, 0, 0, 0xfdff, 0xffff, 0xffff, 0x0000],[0xfe80, 0, 0, 0, 0xfdff, 0xffff, 0xffff, 0x0000],[0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00]) # TESTBEDS
 
         if topology_file is not None:
             routing_manager.load_routes_from_file(topology_file)
@@ -177,6 +184,12 @@ def main():
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_cocoa_cc)
         elif cc_policy == "simple":
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_simple_cc)
+        elif cc_policy == "coapr":
+            global_node_manager.set_local_control_process(ecoap_local_monitoring_program_coapr_cc)
+            cc_manager = COAPRGlobalCC(add_message)
+            print("Mac address list %s" % str(global_node_manager.get_mac_address_list()))
+            cc_manager.set_num_nodes(len(global_node_manager.get_mac_address_list()))
+
         # elif cc_policy == "default":
         else:
             global_node_manager.set_local_control_process(ecoap_local_monitoring_program_default_cc)
